@@ -90,7 +90,7 @@
   .card{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--line);border-radius:6px;padding:18px;position:relative}
   .card.span2{grid-column:span 2}
   @media(max-width:760px){.card.span2{grid-column:span 1}}
-  .card h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+  .card h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
   .card h3 .tag{color:var(--amber)}
 
   /* KPI tile */
@@ -227,6 +227,24 @@
   .btn.sm{padding:7px 12px;font-size:11px}
   .btn.def{border-color:var(--green);background:var(--green);color:#06140d}
   .btn.off{border-color:var(--red);background:transparent;color:var(--red)}
+
+  /* recolección de votantes (Tierra) */
+  .vlist{display:flex;flex-direction:column;max-height:430px;overflow-y:auto}
+  .vrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+  .vrow .vav{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:11px;color:#0a0e18;background:linear-gradient(135deg,var(--amber),#b9791a)}
+  .vrow .vbd{flex:1;min-width:0}
+  .vrow .vbd b{font-size:12.5px;font-family:var(--disp);font-weight:600;letter-spacing:.02em;display:block;line-height:1.15}
+  .vrow .vbd span{font-family:var(--mono);font-size:9.5px;color:var(--muted2)}
+  .vchip{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.05em;padding:3px 7px;border-radius:10px;flex:none;border:1px solid var(--line2);color:var(--muted)}
+  .vchip.pend{color:var(--muted2)}
+  .vchip.sent{color:var(--cobalt);border-color:rgba(77,130,245,.4)}
+  .vchip.conf{color:var(--green);border-color:rgba(70,194,142,.4)}
+  .vchip.pick{color:var(--amber);border-color:rgba(242,179,61,.4)}
+  .vchip.done{color:#fff;background:var(--green);border-color:var(--green)}
+  .vwa{flex:none;cursor:pointer;border:1px solid rgba(70,194,142,.4);background:rgba(70,194,142,.12);color:var(--green);font-family:var(--mono);font-size:9px;padding:5px 8px;border-radius:5px;white-space:nowrap}
+  .vwa:hover{background:rgba(70,194,142,.22)}
+  .vwa:disabled{opacity:.4;cursor:default}
+  @media(max-width:600px){.vrow .vbd span{display:none}}
 
   /* sentiment gauge / bars */
   .sbar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0}
@@ -415,6 +433,31 @@
           <div class="chips" id="cmd-topics"></div>
         </div>
       </div>
+
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card span2">
+          <h3>Proyección electoral · Gubernatura de Sonora <span class="tag" id="proj-upd">actualizado</span></h3>
+          <div class="gauge-wrap" style="align-items:flex-start;flex-wrap:wrap">
+            <div id="proj-ring"></div>
+            <div style="flex:1;min-width:220px">
+              <div class="blist" id="proj-bars"></div>
+              <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--muted)">Ventaja proyectada: <b id="proj-margin" style="color:var(--green)">—</b> · Margen de error ±2.4 pts</div>
+            </div>
+          </div>
+          <h3 style="margin-top:16px">Escenarios <span class="tag">Monte Carlo · 10,000 sim.</span></h3>
+          <div class="grid g3" id="proj-scen"></div>
+        </div>
+        <div class="card">
+          <h3>Estado de operación <span class="tag" style="color:var(--green)">● EN OPERACIÓN</span></h3>
+          <div class="mmetrics" style="grid-template-columns:1fr 1fr">
+            <div class="mmetric"><div class="v" style="color:var(--green)" id="op-uptime">99.98%</div><div class="k">Uptime</div></div>
+            <div class="mmetric"><div class="v" id="op-agents">89</div><div class="k">Agentes activos</div></div>
+            <div class="mmetric"><div class="v" id="op-lat">—</div><div class="k">Latencia media</div></div>
+            <div class="mmetric"><div class="v" style="color:var(--cyan)" id="op-tasks">—</div><div class="k">Tareas / hora</div></div>
+          </div>
+          <div class="blist" id="op-modules" style="margin-top:6px"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ============ INTEL ============ -->
@@ -561,6 +604,33 @@
         </div>
         <div class="card"><h3>Brigadas en campo</h3><div class="blist" id="tierra-brig"></div>
           <h3 style="margin-top:18px">Incidencias recientes</h3><div id="tierra-inc"></div></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3><span>Recolección de votantes · día D <span class="tag" id="pickup-stat">—</span></span>
+          <span class="ops-ctrl">
+            <button class="btn sm def" onclick="sendWhatsAppAll()">🟢 Enviar WhatsApp a todos</button>
+            <button class="btn sm" onclick="startPickupRoute()">🚐 Iniciar ruta</button>
+          </span></h3>
+        <div class="grid g2">
+          <div>
+            <div class="vlist" id="voter-list"></div>
+          </div>
+          <div>
+            <div class="mapwrap" style="height:300px">
+              <canvas id="pickup-canvas"></canvas>
+              <div class="maptip" id="pickup-tip"></div>
+              <div class="maplegend">
+                <span><i style="background:var(--muted2)"></i>Pendiente</span>
+                <span><i style="background:var(--cobalt)"></i>WhatsApp</span>
+                <span><i style="background:var(--green)"></i>Confirmado</span>
+                <span><i style="background:var(--amber)"></i>Recogido</span>
+                <span><i style="background:var(--cyan)"></i>Casilla</span>
+              </div>
+            </div>
+            <div class="notice">El agente de transporte calcula la ruta óptima por las casas confirmadas y la unidad recoge a cada votante rumbo a su casilla. WhatsApp con apego a consentimiento y normativa.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -796,64 +866,34 @@ function pointInPoly(x,y,poly){
 }
 
 /* ===== GEOGRAFÍA REAL (lon/lat) ===== */
-/* Estado de Sonora (contorno simplificado y reconocible) */
+/* Estado de Sonora — contorno REAL (GeoJSON, simplificado) */
 const GEO_SON={
   name:'Sonora', meanLat:29.4,
-  poly:[
-    [-114.80,32.49],[-113.10,32.05],[-112.80,31.88],[-111.07,31.48],[-110.94,31.33],
-    [-109.55,31.34],[-109.05,31.33],[-108.80,30.70],[-108.45,30.00],[-108.55,29.30],
-    [-108.70,28.50],[-108.50,27.80],[-108.80,27.30],[-108.95,26.90],[-109.45,26.45],
-    [-109.95,26.80],[-110.50,27.30],[-110.90,27.90],[-111.30,28.30],[-111.90,28.85],
-    [-112.20,29.30],[-112.50,29.90],[-113.00,30.60],[-113.55,31.30],[-113.90,31.70],
-    [-114.40,31.90]
-  ],
-  /* ciudades más pobladas de Sonora (aprox. por población) */
-  places:[
-    {n:'Hermosillo',lon:-110.95,lat:29.07,cov:.85,hq:true},        // ~930 mil — capital
-    {n:'Cd. Obregón',lon:-109.93,lat:27.49,cov:.70},               // ~460 mil
-    {n:'Nogales',lon:-110.94,lat:31.28,cov:.60},                   // ~265 mil
-    {n:'San Luis R.C.',lon:-114.68,lat:32.40,cov:.55},             // ~200 mil
-    {n:'Navojoa',lon:-109.44,lat:27.07,cov:.48},                   // ~165 mil
-    {n:'Guaymas',lon:-110.85,lat:27.95,cov:.58},                   // ~150 mil
-    {n:'Agua Prieta',lon:-109.55,lat:31.30,cov:.45},               // ~90 mil
-    {n:'Caborca',lon:-112.16,lat:30.72,cov:.40},                   // ~85 mil
-    {n:'Puerto Peñasco',lon:-113.45,lat:31.28,cov:.35},            // ~62 mil
-    {n:'Magdalena',lon:-110.96,lat:30.63,cov:.42}                  // ~30 mil
-  ],
+  poly:[[-108.7723,31.3327],[-108.7303,31.2969],[-108.7289,31.2863],[-108.768,31.253],[-108.7472,31.1873],[-108.6979,31.1245],[-108.6815,31.0897],[-108.6718,31.0346],[-108.6916,30.9906],[-108.6844,30.9472],[-108.6907,30.9283],[-108.7535,30.9259],[-108.7549,30.9047],[-108.7308,30.8771],[-108.7008,30.8646],[-108.6912,30.8481],[-108.6458,30.8134],[-108.6482,30.7583],[-108.6424,30.7298],[-108.6071,30.7114],[-108.6008,30.6979],[-108.6274,30.6424],[-108.6231,30.6143],[-108.5868,30.5829],[-108.5791,30.5636],[-108.5815,30.5226],[-108.552,30.4655],[-108.5535,30.4356],[-108.5317,30.4046],[-108.5042,30.3095],[-108.5028,30.2713],[-108.5153,30.2467],[-108.5491,30.2283],[-108.5429,30.1941],[-108.4849,30.1482],[-108.4849,30.1095],[-108.5047,30.0781],[-108.5419,29.9936],[-108.5438,29.8998],[-108.5593,29.8486],[-108.5457,29.8138],[-108.5231,29.8129],[-108.5004,29.7979],[-108.4965,29.7515],[-108.4863,29.7153],[-108.4868,29.6617],[-108.4665,29.5627],[-108.4704,29.5371],[-108.4637,29.4984],[-108.467,29.4718],[-108.4989,29.4385],[-108.5052,29.4071],[-108.4994,29.2989],[-108.5018,29.2718],[-108.495,29.2086],[-108.5066,29.1907],[-108.5511,29.1776],[-108.5617,29.167],[-108.5694,29.1298],[-108.5656,29.0728],[-108.6163,29.0423],[-108.625,29.0284],[-108.6245,28.9936],[-108.6052,28.9559],[-108.6066,28.939],[-108.6284,28.9187],[-108.6404,28.894],[-108.6197,28.8114],[-108.625,28.7849],[-108.6675,28.7085],[-108.6752,28.6718],[-108.6699,28.6419],[-108.6419,28.6032],[-108.6395,28.5771],[-108.6612,28.5202],[-108.6588,28.5008],[-108.6399,28.4723],[-108.597,28.437],[-108.5071,28.4066],[-108.5308,28.3646],[-108.568,28.3612],[-108.6066,28.3182],[-108.6525,28.3139],[-108.7086,28.2766],[-108.7289,28.2757],[-108.7994,28.3221],[-108.8303,28.3269],[-108.8883,28.2969],[-108.9892,28.2796],[-109.0308,28.2303],[-109.0231,28.209],[-108.9607,28.1709],[-108.9598,28.1467],[-108.9786,28.1216],[-108.9844,28.0733],[-108.9525,28.038],[-108.896,28.0226],[-108.8583,27.9612],[-108.8124,27.9167],[-108.7974,27.8578],[-108.8211,27.7974],[-108.8255,27.7709],[-108.8047,27.7477],[-108.7612,27.7327],[-108.6922,27.6873],[-108.6786,27.6597],[-108.667,27.6129],[-108.6284,27.5622],[-108.5632,27.4172],[-108.5578,27.4003],[-108.5617,27.3559],[-108.5868,27.281],[-108.6115,27.2438],[-108.611,27.1979],[-108.5917,27.1424],[-108.5926,27.1206],[-108.6216,27.1056],[-108.6226,27.0892],[-108.5955,27.0714],[-108.5293,27.0462],[-108.481,27.0236],[-108.4361,27.0317],[-108.4004,27.0458],[-108.3298,27.0317],[-108.3289,27.0013],[-108.3424,26.968],[-108.3815,26.9139],[-108.425,26.8767],[-108.467,26.8288],[-108.4694,26.7955],[-108.4549,26.7598],[-108.4554,26.7395],[-108.5298,26.7197],[-108.595,26.5965],[-108.6119,26.581],[-108.6511,26.5781],[-108.6801,26.5636],[-108.7752,26.5458],[-108.7941,26.5144],[-108.7883,26.4684],[-108.7984,26.425],[-108.8781,26.4042],[-108.9293,26.3622],[-109.0236,26.3197],[-109.0462,26.3008],[-109.0598,26.3134],[-109.0578,26.3424],[-109.0771,26.3395],[-109.0825,26.3675],[-109.1148,26.3824],[-109.1491,26.3728],[-109.1472,26.4187],[-109.1704,26.4332],[-109.1646,26.3772],[-109.1912,26.3574],[-109.2414,26.4187],[-109.2366,26.4549],[-109.2641,26.4916],[-109.2907,26.5429],[-109.3269,26.5801],[-109.3593,26.6003],[-109.382,26.6347],[-109.4317,26.6704],[-109.4458,26.7168],[-109.4685,26.7153],[-109.483,26.7424],[-109.5085,26.7351],[-109.5269,26.7588],[-109.5559,26.7207],[-109.5366,26.7037],[-109.5617,26.6892],[-109.6457,26.696],[-109.6829,26.6752],[-109.767,26.7085],[-109.8143,26.7457],[-109.8516,26.7912],[-109.8511,26.8255],[-109.8675,26.8481],[-109.8733,26.8776],[-109.8999,26.9496],[-109.8926,26.9805],[-109.9177,26.9955],[-109.9076,27.009],[-109.9201,27.0675],[-109.9892,27.1168],[-110.0182,27.1182],[-110.0612,27.0839],[-110.1023,27.1081],[-110.2472,27.1385],[-110.3013,27.1525],[-110.3279,27.168],[-110.423,27.2607],[-110.4786,27.2859],[-110.466,27.294],[-110.4825,27.3269],[-110.4791,27.3728],[-110.5042,27.3868],[-110.525,27.3738],[-110.553,27.3926],[-110.5902,27.4665],[-110.5892,27.54],[-110.6047,27.582],[-110.5955,27.596],[-110.6279,27.624],[-110.6235,27.6516],[-110.6047,27.654],[-110.5689,27.6863],[-110.5989,27.6907],[-110.6018,27.7172],[-110.5743,27.7298],[-110.6134,27.7738],[-110.5941,27.7868],[-110.5998,27.8134],[-110.5834,27.8409],[-110.5491,27.8346],[-110.5375,27.853],[-110.5771,27.881],[-110.61,27.8878],[-110.6308,27.882],[-110.68,27.8897],[-110.738,27.9105],[-110.8114,27.9221],[-110.8245,27.952],[-110.8535,27.9472],[-110.8636,27.925],[-110.8911,27.911],[-110.868,27.8887],[-110.8757,27.8516],[-110.9245,27.867],[-110.9631,27.9028],[-110.9714,27.953],[-111.025,27.9626],[-111.0776,27.9361],[-111.0989,27.9602],[-111.137,27.9844],[-111.1762,27.9959],[-111.2114,28.0414],[-111.2501,28.0521],[-111.2776,28.0819],[-111.2854,28.1129],[-111.3279,28.1569],[-111.3312,28.1878],[-111.4086,28.2728],[-111.4549,28.3129],[-111.4588,28.3612],[-111.4936,28.3878],[-111.5738,28.412],[-111.6448,28.4438],[-111.7114,28.4588],[-111.7177,28.4988],[-111.738,28.5225],[-111.7641,28.5912],[-111.797,28.6259],[-111.8535,28.6607],[-111.9245,28.7202],[-111.9438,28.7641],[-111.9211,28.7665],[-111.9008,28.7868],[-111.8795,28.7458],[-111.854,28.7603],[-111.8549,28.7902],[-111.88,28.8076],[-111.9013,28.794],[-111.9825,28.8487],[-112.0308,28.8587],[-112.0482,28.8984],[-112.0868,28.9254],[-112.0974,28.9515],[-112.1245,28.9626],[-112.1597,28.9622],[-112.1738,28.9708],[-112.1515,28.9964],[-112.1684,29.0254],[-112.1704,29.0718],[-112.1839,29.0786],[-112.1656,29.1129],[-112.2023,29.1786],[-112.2298,29.181],[-112.2085,29.2443],[-112.2332,29.3076],[-112.2588,29.3283],[-112.3114,29.3279],[-112.3443,29.3138],[-112.4013,29.3356],[-112.4187,29.3829],[-112.3815,29.4525],[-112.3786,29.481],[-112.3907,29.5008],[-112.4303,29.5196],[-112.4366,29.5607],[-112.4767,29.5897],[-112.5235,29.6506],[-112.5433,29.6887],[-112.5805,29.7114],[-112.5863,29.7375],[-112.6066,29.7791],[-112.652,29.8351],[-112.6496,29.8559],[-112.6651,29.8906],[-112.6834,29.9042],[-112.7477,29.9158],[-112.7337,30.0013],[-112.7583,30.0525],[-112.753,30.1728],[-112.7733,30.2216],[-112.8008,30.2515],[-112.8375,30.2708],[-112.8511,30.2873],[-112.8481,30.3621],[-112.8554,30.3931],[-112.8984,30.4588],[-112.967,30.5235],[-112.9902,30.5331],[-113.0187,30.581],[-113.0428,30.611],[-113.0825,30.6723],[-113.1042,30.7549],[-113.1278,30.8129],[-113.1134,30.838],[-113.0989,30.8916],[-113.0926,30.9583],[-113.0844,30.9931],[-113.0578,31.0279],[-113.0544,31.0665],[-113.0752,31.1365],[-113.0945,31.1844],[-113.1134,31.1834],[-113.2056,31.2303],[-113.2168,31.2597],[-113.2535,31.2607],[-113.2651,31.2429],[-113.3607,31.2674],[-113.5452,31.296],[-113.5713,31.3216],[-113.623,31.3269],[-113.6138,31.3771],[-113.6365,31.4317],[-113.6341,31.4602],[-113.6559,31.4916],[-113.7032,31.525],[-113.7994,31.5602],[-113.8486,31.5858],[-113.8762,31.5882],[-113.8815,31.6085],[-113.9201,31.6018],[-113.9515,31.6206],[-113.9747,31.5969],[-113.9597,31.5602],[-113.9882,31.5279],[-114.0167,31.5308],[-114.0221,31.4965],[-114.0331,31.4902],[-114.1472,31.4935],[-114.1974,31.508],[-114.2274,31.5274],[-114.2723,31.5423],[-114.3254,31.5829],[-114.3298,31.5955],[-114.4245,31.6433],[-114.4462,31.6501],[-114.4636,31.6704],[-114.4936,31.6757],[-114.5259,31.6984],[-114.553,31.7341],[-114.5897,31.7554],[-114.6322,31.7631],[-114.6757,31.7602],[-114.7269,31.78],[-114.7462,31.8081],[-114.766,31.8201],[-114.7989,31.8201],[-114.8462,31.8554],[-114.8974,31.8858],[-114.9327,31.8969],[-114.9776,31.9244],[-114.9883,31.9187],[-115.0264,31.951],[-115.0022,31.9844],[-115.0119,32.0177],[-114.995,32.0771],[-114.995,32.1085],[-115.0066,32.1457],[-114.982,32.2095],[-115.0018,32.2433],[-115.038,32.2771],[-115.0337,32.2935],[-114.9814,32.336],[-114.9655,32.3597],[-114.9636,32.4051],[-114.9448,32.4216],[-114.9448,32.4414],[-114.9153,32.4926],[-114.867,32.4916],[-114.8481,32.4781],[-114.8143,32.4955],[-114.3457,32.3529],[-113.9593,32.2341],[-112.9424,31.9187],[-112.6047,31.8158],[-112.2235,31.696],[-111.6182,31.5052],[-111.0728,31.3293],[-110.7916,31.3317],[-110.4602,31.3317],[-109.7583,31.3322],[-109.0501,31.3317],[-108.7723,31.3327]],
+  rings:[[[-108.7723,31.3327],[-108.7303,31.2969],[-108.7289,31.2863],[-108.768,31.253],[-108.7472,31.1873],[-108.6979,31.1245],[-108.6815,31.0897],[-108.6718,31.0346],[-108.6916,30.9906],[-108.6844,30.9472],[-108.6907,30.9283],[-108.7535,30.9259],[-108.7549,30.9047],[-108.7308,30.8771],[-108.7008,30.8646],[-108.6912,30.8481],[-108.6458,30.8134],[-108.6482,30.7583],[-108.6424,30.7298],[-108.6071,30.7114],[-108.6008,30.6979],[-108.6274,30.6424],[-108.6231,30.6143],[-108.5868,30.5829],[-108.5791,30.5636],[-108.5815,30.5226],[-108.552,30.4655],[-108.5535,30.4356],[-108.5317,30.4046],[-108.5042,30.3095],[-108.5028,30.2713],[-108.5153,30.2467],[-108.5491,30.2283],[-108.5429,30.1941],[-108.4849,30.1482],[-108.4849,30.1095],[-108.5047,30.0781],[-108.5419,29.9936],[-108.5438,29.8998],[-108.5593,29.8486],[-108.5457,29.8138],[-108.5231,29.8129],[-108.5004,29.7979],[-108.4965,29.7515],[-108.4863,29.7153],[-108.4868,29.6617],[-108.4665,29.5627],[-108.4704,29.5371],[-108.4637,29.4984],[-108.467,29.4718],[-108.4989,29.4385],[-108.5052,29.4071],[-108.4994,29.2989],[-108.5018,29.2718],[-108.495,29.2086],[-108.5066,29.1907],[-108.5511,29.1776],[-108.5617,29.167],[-108.5694,29.1298],[-108.5656,29.0728],[-108.6163,29.0423],[-108.625,29.0284],[-108.6245,28.9936],[-108.6052,28.9559],[-108.6066,28.939],[-108.6284,28.9187],[-108.6404,28.894],[-108.6197,28.8114],[-108.625,28.7849],[-108.6675,28.7085],[-108.6752,28.6718],[-108.6699,28.6419],[-108.6419,28.6032],[-108.6395,28.5771],[-108.6612,28.5202],[-108.6588,28.5008],[-108.6399,28.4723],[-108.597,28.437],[-108.5071,28.4066],[-108.5308,28.3646],[-108.568,28.3612],[-108.6066,28.3182],[-108.6525,28.3139],[-108.7086,28.2766],[-108.7289,28.2757],[-108.7994,28.3221],[-108.8303,28.3269],[-108.8883,28.2969],[-108.9892,28.2796],[-109.0308,28.2303],[-109.0231,28.209],[-108.9607,28.1709],[-108.9598,28.1467],[-108.9786,28.1216],[-108.9844,28.0733],[-108.9525,28.038],[-108.896,28.0226],[-108.8583,27.9612],[-108.8124,27.9167],[-108.7974,27.8578],[-108.8211,27.7974],[-108.8255,27.7709],[-108.8047,27.7477],[-108.7612,27.7327],[-108.6922,27.6873],[-108.6786,27.6597],[-108.667,27.6129],[-108.6284,27.5622],[-108.5632,27.4172],[-108.5578,27.4003],[-108.5617,27.3559],[-108.5868,27.281],[-108.6115,27.2438],[-108.611,27.1979],[-108.5917,27.1424],[-108.5926,27.1206],[-108.6216,27.1056],[-108.6226,27.0892],[-108.5955,27.0714],[-108.5293,27.0462],[-108.481,27.0236],[-108.4361,27.0317],[-108.4004,27.0458],[-108.3298,27.0317],[-108.3289,27.0013],[-108.3424,26.968],[-108.3815,26.9139],[-108.425,26.8767],[-108.467,26.8288],[-108.4694,26.7955],[-108.4549,26.7598],[-108.4554,26.7395],[-108.5298,26.7197],[-108.595,26.5965],[-108.6119,26.581],[-108.6511,26.5781],[-108.6801,26.5636],[-108.7752,26.5458],[-108.7941,26.5144],[-108.7883,26.4684],[-108.7984,26.425],[-108.8781,26.4042],[-108.9293,26.3622],[-109.0236,26.3197],[-109.0462,26.3008],[-109.0598,26.3134],[-109.0578,26.3424],[-109.0771,26.3395],[-109.0825,26.3675],[-109.1148,26.3824],[-109.1491,26.3728],[-109.1472,26.4187],[-109.1704,26.4332],[-109.1646,26.3772],[-109.1912,26.3574],[-109.2414,26.4187],[-109.2366,26.4549],[-109.2641,26.4916],[-109.2907,26.5429],[-109.3269,26.5801],[-109.3593,26.6003],[-109.382,26.6347],[-109.4317,26.6704],[-109.4458,26.7168],[-109.4685,26.7153],[-109.483,26.7424],[-109.5085,26.7351],[-109.5269,26.7588],[-109.5559,26.7207],[-109.5366,26.7037],[-109.5617,26.6892],[-109.6457,26.696],[-109.6829,26.6752],[-109.767,26.7085],[-109.8143,26.7457],[-109.8516,26.7912],[-109.8511,26.8255],[-109.8675,26.8481],[-109.8733,26.8776],[-109.8999,26.9496],[-109.8926,26.9805],[-109.9177,26.9955],[-109.9076,27.009],[-109.9201,27.0675],[-109.9892,27.1168],[-110.0182,27.1182],[-110.0612,27.0839],[-110.1023,27.1081],[-110.2472,27.1385],[-110.3013,27.1525],[-110.3279,27.168],[-110.423,27.2607],[-110.4786,27.2859],[-110.466,27.294],[-110.4825,27.3269],[-110.4791,27.3728],[-110.5042,27.3868],[-110.525,27.3738],[-110.553,27.3926],[-110.5902,27.4665],[-110.5892,27.54],[-110.6047,27.582],[-110.5955,27.596],[-110.6279,27.624],[-110.6235,27.6516],[-110.6047,27.654],[-110.5689,27.6863],[-110.5989,27.6907],[-110.6018,27.7172],[-110.5743,27.7298],[-110.6134,27.7738],[-110.5941,27.7868],[-110.5998,27.8134],[-110.5834,27.8409],[-110.5491,27.8346],[-110.5375,27.853],[-110.5771,27.881],[-110.61,27.8878],[-110.6308,27.882],[-110.68,27.8897],[-110.738,27.9105],[-110.8114,27.9221],[-110.8245,27.952],[-110.8535,27.9472],[-110.8636,27.925],[-110.8911,27.911],[-110.868,27.8887],[-110.8757,27.8516],[-110.9245,27.867],[-110.9631,27.9028],[-110.9714,27.953],[-111.025,27.9626],[-111.0776,27.9361],[-111.0989,27.9602],[-111.137,27.9844],[-111.1762,27.9959],[-111.2114,28.0414],[-111.2501,28.0521],[-111.2776,28.0819],[-111.2854,28.1129],[-111.3279,28.1569],[-111.3312,28.1878],[-111.4086,28.2728],[-111.4549,28.3129],[-111.4588,28.3612],[-111.4936,28.3878],[-111.5738,28.412],[-111.6448,28.4438],[-111.7114,28.4588],[-111.7177,28.4988],[-111.738,28.5225],[-111.7641,28.5912],[-111.797,28.6259],[-111.8535,28.6607],[-111.9245,28.7202],[-111.9438,28.7641],[-111.9211,28.7665],[-111.9008,28.7868],[-111.8795,28.7458],[-111.854,28.7603],[-111.8549,28.7902],[-111.88,28.8076],[-111.9013,28.794],[-111.9825,28.8487],[-112.0308,28.8587],[-112.0482,28.8984],[-112.0868,28.9254],[-112.0974,28.9515],[-112.1245,28.9626],[-112.1597,28.9622],[-112.1738,28.9708],[-112.1515,28.9964],[-112.1684,29.0254],[-112.1704,29.0718],[-112.1839,29.0786],[-112.1656,29.1129],[-112.2023,29.1786],[-112.2298,29.181],[-112.2085,29.2443],[-112.2332,29.3076],[-112.2588,29.3283],[-112.3114,29.3279],[-112.3443,29.3138],[-112.4013,29.3356],[-112.4187,29.3829],[-112.3815,29.4525],[-112.3786,29.481],[-112.3907,29.5008],[-112.4303,29.5196],[-112.4366,29.5607],[-112.4767,29.5897],[-112.5235,29.6506],[-112.5433,29.6887],[-112.5805,29.7114],[-112.5863,29.7375],[-112.6066,29.7791],[-112.652,29.8351],[-112.6496,29.8559],[-112.6651,29.8906],[-112.6834,29.9042],[-112.7477,29.9158],[-112.7337,30.0013],[-112.7583,30.0525],[-112.753,30.1728],[-112.7733,30.2216],[-112.8008,30.2515],[-112.8375,30.2708],[-112.8511,30.2873],[-112.8481,30.3621],[-112.8554,30.3931],[-112.8984,30.4588],[-112.967,30.5235],[-112.9902,30.5331],[-113.0187,30.581],[-113.0428,30.611],[-113.0825,30.6723],[-113.1042,30.7549],[-113.1278,30.8129],[-113.1134,30.838],[-113.0989,30.8916],[-113.0926,30.9583],[-113.0844,30.9931],[-113.0578,31.0279],[-113.0544,31.0665],[-113.0752,31.1365],[-113.0945,31.1844],[-113.1134,31.1834],[-113.2056,31.2303],[-113.2168,31.2597],[-113.2535,31.2607],[-113.2651,31.2429],[-113.3607,31.2674],[-113.5452,31.296],[-113.5713,31.3216],[-113.623,31.3269],[-113.6138,31.3771],[-113.6365,31.4317],[-113.6341,31.4602],[-113.6559,31.4916],[-113.7032,31.525],[-113.7994,31.5602],[-113.8486,31.5858],[-113.8762,31.5882],[-113.8815,31.6085],[-113.9201,31.6018],[-113.9515,31.6206],[-113.9747,31.5969],[-113.9597,31.5602],[-113.9882,31.5279],[-114.0167,31.5308],[-114.0221,31.4965],[-114.0331,31.4902],[-114.1472,31.4935],[-114.1974,31.508],[-114.2274,31.5274],[-114.2723,31.5423],[-114.3254,31.5829],[-114.3298,31.5955],[-114.4245,31.6433],[-114.4462,31.6501],[-114.4636,31.6704],[-114.4936,31.6757],[-114.5259,31.6984],[-114.553,31.7341],[-114.5897,31.7554],[-114.6322,31.7631],[-114.6757,31.7602],[-114.7269,31.78],[-114.7462,31.8081],[-114.766,31.8201],[-114.7989,31.8201],[-114.8462,31.8554],[-114.8974,31.8858],[-114.9327,31.8969],[-114.9776,31.9244],[-114.9883,31.9187],[-115.0264,31.951],[-115.0022,31.9844],[-115.0119,32.0177],[-114.995,32.0771],[-114.995,32.1085],[-115.0066,32.1457],[-114.982,32.2095],[-115.0018,32.2433],[-115.038,32.2771],[-115.0337,32.2935],[-114.9814,32.336],[-114.9655,32.3597],[-114.9636,32.4051],[-114.9448,32.4216],[-114.9448,32.4414],[-114.9153,32.4926],[-114.867,32.4916],[-114.8481,32.4781],[-114.8143,32.4955],[-114.3457,32.3529],[-113.9593,32.2341],[-112.9424,31.9187],[-112.6047,31.8158],[-112.2235,31.696],[-111.6182,31.5052],[-111.0728,31.3293],[-110.7916,31.3317],[-110.4602,31.3317],[-109.7583,31.3322],[-109.0501,31.3317],[-108.7723,31.3327]],[[-112.2834,29.2332],[-112.2815,29.2114],[-112.2641,29.1786],[-112.2747,29.1385],[-112.2366,29.0965],[-112.2187,29.0539],[-112.195,29.0192],[-112.2119,28.9921],[-112.2158,28.9438],[-112.239,28.8718],[-112.2771,28.8047],[-112.2791,28.7689],[-112.3085,28.7467],[-112.3278,28.7631],[-112.3588,28.7592],[-112.4071,28.7994],[-112.4607,28.8018],[-112.4733,28.8216],[-112.5805,28.8747],[-112.5143,28.9177],[-112.4907,28.9482],[-112.4921,28.9863],[-112.5066,29.0134],[-112.5061,29.0622],[-112.4945,29.0718],[-112.4882,29.1303],[-112.4776,29.167],[-112.454,29.1974],[-112.4003,29.1892],[-112.3607,29.2206],[-112.3322,29.2187],[-112.2834,29.2332]],[[-114.7863,31.8192],[-114.7462,31.8027],[-114.7394,31.7795],[-114.7177,31.7534],[-114.6646,31.7211],[-114.6438,31.6839],[-114.6549,31.6607],[-114.6868,31.6829],[-114.7148,31.68],[-114.7563,31.6984],[-114.7916,31.7293],[-114.8071,31.7631],[-114.8008,31.8124],[-114.7863,31.8192]]],
+  places:[{"n":"Hermosillo","lon":-110.955,"lat":29.072,"cov":0.85,"hq":true},{"n":"Cd. Obregón","lon":-109.93,"lat":27.49,"cov":0.7},{"n":"Nogales","lon":-110.94,"lat":31.28,"cov":0.6},{"n":"San Luis R.C.","lon":-114.7,"lat":32.42,"cov":0.55},{"n":"Navojoa","lon":-109.44,"lat":27.07,"cov":0.48},{"n":"Guaymas","lon":-110.88,"lat":27.93,"cov":0.58},{"n":"Empalme","lon":-110.81,"lat":27.96,"cov":0.4},{"n":"Caborca","lon":-112.1,"lat":30.72,"cov":0.4},{"n":"Agua Prieta","lon":-109.55,"lat":31.3,"cov":0.45},{"n":"P. Peñasco","lon":-113.53,"lat":31.31,"cov":0.35},{"n":"Magdalena","lon":-110.96,"lat":30.63,"cov":0.42},{"n":"Cananea","lon":-110.3,"lat":30.98,"cov":0.33},{"n":"Nacozari","lon":-109.68,"lat":30.37,"cov":0.25},{"n":"Huatabampo","lon":-109.64,"lat":26.83,"cov":0.38},{"n":"Álamos","lon":-108.94,"lat":27.02,"cov":0.22},{"n":"Santa Ana","lon":-111.12,"lat":30.54,"cov":0.28},{"n":"Sonoyta","lon":-112.85,"lat":31.84,"cov":0.2},{"n":"Moctezuma","lon":-109.67,"lat":29.8,"cov":0.22},{"n":"Ures","lon":-110.4,"lat":29.43,"cov":0.2}],
   seaLabels:[
-    {t:'ESTADOS UNIDOS (ARIZONA)',lon:-111.6,lat:32.30,c:'rgba(140,151,175,.5)'},
-    {t:'GOLFO DE\nCALIFORNIA',lon:-112.9,lat:28.7,c:'rgba(79,216,232,.35)'},
-    {t:'CHIHUAHUA',lon:-108.55,lat:29.10,c:'rgba(140,151,175,.4)',rot:90},
-    {t:'SINALOA',lon:-108.95,lat:26.65,c:'rgba(140,151,175,.4)'}
+    {t:'ESTADOS UNIDOS (ARIZONA)',lon:-111.8,lat:32.20,c:'rgba(140,151,175,.5)'},
+    {t:'GOLFO DE\nCALIFORNIA',lon:-113.0,lat:28.8,c:'rgba(79,216,232,.35)'},
+    {t:'CHIHUAHUA',lon:-108.5,lat:29.4,c:'rgba(140,151,175,.4)',rot:90},
+    {t:'SINALOA',lon:-109.2,lat:26.6,c:'rgba(140,151,175,.4)'}
   ]
 };
-/* Ciudad de Hermosillo (contorno aproximado + colonias) */
+/* Ciudad de Hermosillo — zona urbana (realista) + colonias */
 const GEO_HMO={
-  name:'Hermosillo', meanLat:29.07,
-  poly:[
-    [-111.030,29.130],[-110.980,29.142],[-110.930,29.138],[-110.895,29.112],[-110.882,29.075],
-    [-110.895,29.035],[-110.930,29.008],[-110.975,29.005],[-111.018,29.030],[-111.042,29.078]
-  ],
-  places:[
-    {n:'Centro',lon:-110.955,lat:29.075,cov:.88},
-    {n:'Pitic',lon:-110.968,lat:29.098,cov:.80},
-    {n:'Modelo',lon:-110.990,lat:29.090,cov:.66},
-    {n:'San Benito',lon:-110.932,lat:29.092,cov:.60},
-    {n:'Las Quintas',lon:-110.928,lat:29.112,cov:.58},
-    {n:'Villa de Seris',lon:-110.952,lat:29.040,cov:.50},
-    {n:'Olivares',lon:-110.988,lat:29.058,cov:.45},
-    {n:'Y Griega',lon:-110.912,lat:29.062,cov:.34}
-  ],
-  seaLabels:[
-    {t:'RÍO SONORA',lon:-110.905,lat:29.050,c:'rgba(79,216,232,.30)',rot:-65}
-  ]
+  name:'Hermosillo', meanLat:29.085,
+  poly:[[-111,29.14],[-110.96,29.15],[-110.915,29.14],[-110.89,29.115],[-110.882,29.085],[-110.89,29.055],[-110.905,29.03],[-110.94,29.018],[-110.975,29.022],[-111,29.045],[-111.018,29.075],[-111.02,29.105]],
+  rings:[[[-111,29.14],[-110.96,29.15],[-110.915,29.14],[-110.89,29.115],[-110.882,29.085],[-110.89,29.055],[-110.905,29.03],[-110.94,29.018],[-110.975,29.022],[-111,29.045],[-111.018,29.075],[-111.02,29.105]]],
+  places:[{"n":"Centro","lon":-110.955,"lat":29.072,"cov":0.88},{"n":"Pitic","lon":-110.968,"lat":29.092,"cov":0.82},{"n":"Centenario","lon":-110.978,"lat":29.082,"cov":0.7},{"n":"Modelo","lon":-110.99,"lat":29.09,"cov":0.66},{"n":"San Benito","lon":-110.94,"lat":29.088,"cov":0.6},{"n":"Las Quintas","lon":-110.928,"lat":29.108,"cov":0.58},{"n":"Villa de Seris","lon":-110.952,"lat":29.045,"cov":0.5},{"n":"Olivares","lon":-110.985,"lat":29.058,"cov":0.45},{"n":"Y Griega","lon":-110.918,"lat":29.058,"cov":0.38},{"n":"Sahuaro","lon":-110.945,"lat":29.12,"cov":0.5},{"n":"Solidaridad","lon":-110.992,"lat":29.118,"cov":0.35},{"n":"Palo Verde","lon":-110.905,"lat":29.09,"cov":0.4},{"n":"Real del Carmen","lon":-110.898,"lat":29.072,"cov":0.3},{"n":"Apaches","lon":-110.93,"lat":29.04,"cov":0.32}],
+  seaLabels:[{t:'RÍO SONORA',lon:-110.905,lat:29.048,c:'rgba(79,216,232,.30)',rot:-58}]
 };
 /* proyección lon/lat → pixeles preservando proporción y centrada */
 function projectGeo(geo,w,h,pad){
   const k=Math.cos(geo.meanLat*Math.PI/180)*111; // km por grado lon
   let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
-  geo.poly.forEach(([lon,lat])=>{const x=lon*k,y=lat*111;
-    minx=Math.min(minx,x);maxx=Math.max(maxx,x);miny=Math.min(miny,y);maxy=Math.max(maxy,y);});
+  const allRings=geo.rings||[geo.poly];
+  allRings.forEach(rg=>rg.forEach(([lon,lat])=>{const x=lon*k,y=lat*111;
+    minx=Math.min(minx,x);maxx=Math.max(maxx,x);miny=Math.min(miny,y);maxy=Math.max(maxy,y);}));
   const gw=maxx-minx,gh=maxy-miny;
   const s=Math.min((w-pad*2)/gw,(h-pad*2)/gh);
   const ox=(w-gw*s)/2, oy=(h-gh*s)/2;
@@ -867,6 +907,7 @@ function buildDistrict(o,opt={}){
   o.onResize=(c)=>{
     const P=projectGeo(geo,c.w,c.h,18); c.data.proj=P; c.data.bbox=P.bbox;
     c.data.poly=geo.poly.map(([lon,lat])=>P.proj(lon,lat));
+    c.data.rings=(geo.rings||[geo.poly]).map(rg=>rg.map(([lon,lat])=>P.proj(lon,lat)));
     c.data.col=geo.places.map(pl=>{const [px,py]=P.proj(pl.lon,pl.lat);return {...pl,n:pl.n,px,py,cov:pl.cov};});
     c.data.labels=(geo.seaLabels||[]).map(l=>{const [px,py]=P.proj(l.lon,l.lat);return {...l,px,py};});
     // heat grid
@@ -954,6 +995,32 @@ function drawDistrict(c,t,dt){
   for(let i=1;i<D.poly.length;i++)ctx.lineTo(D.poly[i][0],D.poly[i][1]);
   ctx.closePath();
   ctx.strokeStyle='rgba(79,216,232,.5)';ctx.lineWidth=1.6;ctx.stroke();
+
+  // islas / anillos secundarios (ej. Isla Tiburón)
+  if(D.rings&&D.rings.length>1){
+    for(let r=1;r<D.rings.length;r++){const rg=D.rings[r];if(rg.length<3)continue;
+      ctx.beginPath();ctx.moveTo(rg[0][0],rg[0][1]);
+      for(let i=1;i<rg.length;i++)ctx.lineTo(rg[i][0],rg[i][1]);
+      ctx.closePath();ctx.fillStyle='rgba(77,130,245,.05)';ctx.fill();
+      ctx.strokeStyle='rgba(79,216,232,.3)';ctx.lineWidth=1;ctx.stroke();}
+  }
+
+  // flujos entre ciudades (movimientos de coordinación) — solo Sonora
+  if(D.geo&&D.geo.name==='Sonora'&&D.col){
+    const hq=D.col.find(c=>c.hq)||D.col[0];
+    const targets=D.col.filter(c=>!c.hq);
+    for(let i=0;i<targets.length;i++){
+      const tg=targets[i];
+      const k=(t*0.18+i*0.5)%1;
+      // línea tenue
+      ctx.beginPath();ctx.moveTo(hq.px,hq.py);ctx.lineTo(tg.px,tg.py);
+      ctx.strokeStyle='rgba(242,179,61,.10)';ctx.lineWidth=.8;
+      ctx.setLineDash([4,5]);ctx.lineDashOffset=-(t*30)%9;ctx.stroke();ctx.setLineDash([]);
+      // paquete viajando
+      const px=lerp(hq.px,tg.px,k),py=lerp(hq.py,tg.py,k);
+      ctx.beginPath();ctx.arc(px,py,1.8,0,7);ctx.fillStyle='rgba(79,216,232,.8)';ctx.fill();
+    }
+  }
 
   // sea / border labels
   if(D.labels){
@@ -1343,6 +1410,33 @@ function renderAlerts(){
   $('#alert-n').textContent=ALERTS.length;
 }
 
+/* proyección electoral (gubernatura) */
+function renderProjection(){
+  if(!$('#proj-ring'))return;
+  const win=ri(58,66);
+  $('#proj-ring').innerHTML=ring(win,win>=55?COL.green:COL.amber,'prob. ganar');
+  const us=rnd(44,47.5),a=rnd(29,33),b=rnd(15,18.5),ot=clamp(100-us-a-b,3,12);
+  const bars=[['Nuestra campaña',us,'green'],['Adversario A',a,''],['Adversario B',b,''],['Otros / indecisos',ot,'amber']];
+  $('#proj-bars').innerHTML=bars.map(x=>`<div class="brow"><div class="top"><span>${x[0]}</span><span>${x[1].toFixed(1)}%</span></div><div class="track"><i class="${x[2]}" style="width:${x[1]}%"></i></div></div>`).join('');
+  $('#proj-margin').textContent='+'+(us-a).toFixed(1)+' pts';
+  const scen=[['Optimista',(us+2.5).toFixed(1),'82%','green'],['Base',us.toFixed(1),(win)+'%','amber'],['Riesgo',(us-2.8).toFixed(1),'41%','']];
+  $('#proj-scen').innerHTML=scen.map(s=>`<div class="card" style="padding:12px;background:var(--bg)">
+    <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase">${s[0]}</div>
+    <div style="font-family:var(--disp);font-weight:800;font-size:26px;color:${s[3]==='green'?'var(--green)':s[3]==='amber'?'var(--amber)':'var(--text)'}">${s[1]}%</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">prob. ${s[2]}</div></div>`).join('');
+  $('#proj-upd').textContent='actualizado '+new Date().toLocaleTimeString('es-MX',{hour12:false});
+}
+/* estado de operación */
+function renderOpStatus(){
+  if(!$('#op-lat'))return;
+  animateNum($('#op-lat'),ri(190,360),{suf:'ms'});
+  animateNum($('#op-tasks'),ri(920,1680),{thousand:true});
+  $('#op-agents').textContent=89;
+  $('#op-uptime').textContent=(99.9+Math.random()*0.09).toFixed(2)+'%';
+  const mods=[['Intel',ri(60,95)],['Digital',ri(40,80)],['Tierra',ri(55,90)],['GOTV',ri(45,85)],['Shield',ri(30,70)],['Defensa',ri(20,60)]];
+  $('#op-modules').innerHTML=mods.map(m=>`<div class="brow"><div class="top"><span>${m[0]} <span style="color:var(--green)">● operando</span></span><span>${m[1]}% carga</span></div><div class="track"><i class="${m[1]>75?'amber':'green'}" style="width:${m[1]}%"></i></div></div>`).join('');
+}
+
 const STATE={intent:42.6,sent:34,reach:184200,voters:38740,
   intentHist:[],sentHist:[],reachHist:[],votersHist:[]};
 for(let i=0;i<24;i++){STATE.intentHist.push(rnd(40,43));STATE.sentHist.push(rnd(28,38));STATE.reachHist.push(rnd(150,190));STATE.votersHist.push(rnd(35,39));}
@@ -1628,6 +1722,98 @@ function renderTierra(){
 }
 function tierraLive(){tHomes+=ri(3,14);animateNum($('#t-homes'),tHomes,{thousand:true});$('#t-homes-d').textContent='▲ '+ri(3,14);}
 
+/* ===== recolección de votantes (día D): lista + WhatsApp + ruta ===== */
+const VOTERS=[
+  {n:'María López',col:'Centro',lon:-110.956,lat:29.074,tel:'662···87',st:'pend'},
+  {n:'Juan Robles',col:'Pitic',lon:-110.967,lat:29.091,tel:'662···12',st:'pend'},
+  {n:'Rosa Méndez',col:'Modelo',lon:-110.989,lat:29.089,tel:'662···45',st:'pend'},
+  {n:'Luis García',col:'San Benito',lon:-110.941,lat:29.087,tel:'662···33',st:'pend'},
+  {n:'Ana Beltrán',col:'Las Quintas',lon:-110.929,lat:29.107,tel:'662···78',st:'pend'},
+  {n:'Pedro Ruiz',col:'Villa de Seris',lon:-110.953,lat:29.046,tel:'662···09',st:'pend'},
+  {n:'Carmen Soto',col:'Olivares',lon:-110.984,lat:29.059,tel:'662···61',st:'pend'},
+  {n:'José Valdez',col:'Y Griega',lon:-110.919,lat:29.059,tel:'662···24',st:'pend'},
+  {n:'Laura Ibarra',col:'Sahuaro',lon:-110.946,lat:29.119,tel:'662···50',st:'pend'},
+  {n:'Mario Flores',col:'Apaches',lon:-110.931,lat:29.041,tel:'662···96',st:'pend'}
+];
+const VLBL={pend:'pendiente',sent:'WhatsApp',conf:'confirmado',pick:'recogido',done:'en casilla'};
+const PICKUP={veh:null,route:[],casilla:null};
+function renderVoters(){
+  const L=$('#voter-list'); if(!L)return;
+  L.innerHTML=VOTERS.map((v,i)=>`<div class="vrow"><div class="vav">${v.n.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+    <div class="vbd"><b>${v.n}</b><span>${v.col} · ${v.tel}</span></div>
+    <span class="vchip ${v.st}">${VLBL[v.st]}</span>
+    <button class="vwa" onclick="sendWhatsApp(${i})" ${v.st!=='pend'?'disabled':''}>WhatsApp</button></div>`).join('');
+  pickupStat();
+}
+function pickupStat(){
+  const conf=VOTERS.filter(v=>['conf','pick','done'].includes(v.st)).length;
+  const done=VOTERS.filter(v=>v.st==='done').length;
+  const el=$('#pickup-stat'); if(el)el.textContent=`${conf}/${VOTERS.length} confirmados · ${done} en casilla`;
+}
+function sendWhatsApp(i){const v=VOTERS[i]; if(v.st!=='pend')return; v.st='sent'; renderVoters();
+  setTimeout(()=>{if(v.st==='sent'){v.st='conf'; renderVoters();}}, rnd(700,1700));}
+function sendWhatsAppAll(){VOTERS.forEach((v,i)=>{if(v.st==='pend')setTimeout(()=>sendWhatsApp(i),i*220);});}
+function orderRoute(start,items){const res=[],pool=[...items];let cur=start;
+  while(pool.length){let bi=0,bd=1e9;for(let k=0;k<pool.length;k++){const d=Math.hypot(pool[k].x-cur.x,pool[k].y-cur.y);if(d<bd){bd=d;bi=k;}}cur=pool[bi];res.push(pool.splice(bi,1)[0]);}
+  return res;}
+function startPickupRoute(){
+  const o=CANVASES['pickup-canvas']; if(!o||!o.data.poly||!o.data.casilla)return;
+  // confirma los que tengan WhatsApp enviado o pendiente para la demo
+  VOTERS.forEach(v=>{if(v.st==='sent'||v.st==='pend')v.st='conf';});
+  const cas=o.data.casilla;
+  const items=VOTERS.map((v,i)=>({x:v._x,y:v._y,i})).filter(it=>VOTERS[it.i].st!=='done');
+  if(!items.length){renderVoters();return;}
+  const ordered=orderRoute(cas,items);
+  PICKUP.route=[{x:cas.x,y:cas.y,voterIdx:null}, ...ordered.map(it=>({x:it.x,y:it.y,voterIdx:it.i})), {x:cas.x,y:cas.y,voterIdx:'casilla'}];
+  PICKUP.veh={x:cas.x,y:cas.y,seg:0,active:true};
+  renderVoters();
+}
+function buildPickup(o){
+  o.onResize=(c)=>{
+    const P=projectGeo(GEO_HMO,c.w,c.h,22); c.data.P=P;
+    c.data.poly=GEO_HMO.poly.map(([a,b])=>P.proj(a,b));
+    VOTERS.forEach(v=>{const [x,y]=P.proj(v.lon,v.lat);v._x=x;v._y=y;});
+    const [cx,cy]=P.proj(-110.948,29.066); c.data.casilla={x:cx,y:cy}; PICKUP.casilla=c.data.casilla;
+  };
+}
+function drawPickup(c,t){
+  const ctx=c.ctx; ctx.clearRect(0,0,c.w,c.h); const D=c.data; if(!D.poly)return;
+  const dt=clamp(t-(D._lt||t),0,0.05); D._lt=t;
+  // outline
+  ctx.beginPath();ctx.moveTo(D.poly[0][0],D.poly[0][1]);for(let i=1;i<D.poly.length;i++)ctx.lineTo(D.poly[i][0],D.poly[i][1]);ctx.closePath();
+  ctx.fillStyle='rgba(77,130,245,.04)';ctx.fill();ctx.strokeStyle='rgba(79,216,232,.4)';ctx.lineWidth=1.4;ctx.stroke();
+  // route
+  if(PICKUP.route.length>1){
+    ctx.beginPath();ctx.moveTo(PICKUP.route[0].x,PICKUP.route[0].y);
+    for(let i=1;i<PICKUP.route.length;i++)ctx.lineTo(PICKUP.route[i].x,PICKUP.route[i].y);
+    ctx.strokeStyle='rgba(242,179,61,.45)';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.lineDashOffset=-(t*30)%10;ctx.stroke();ctx.setLineDash([]);
+  }
+  // casilla
+  if(D.casilla){const cs=D.casilla,pl=Math.sin(t*3)*.5+.5;
+    ctx.beginPath();ctx.arc(cs.x,cs.y,7+pl*5,0,7);ctx.fillStyle='rgba(79,216,232,.15)';ctx.fill();
+    ctx.beginPath();ctx.arc(cs.x,cs.y,5,0,7);ctx.fillStyle=COL.cyan;ctx.fill();
+    ctx.fillStyle='rgba(234,238,247,.9)';ctx.font='600 9px JetBrains Mono, monospace';ctx.textAlign='center';ctx.fillText('CASILLA',cs.x,cs.y-11);}
+  // voter pins
+  VOTERS.forEach(v=>{const col=v.st==='done'?COL.green:v.st==='pick'?COL.amber:v.st==='conf'?COL.green:v.st==='sent'?COL.cobalt:COL.muted;
+    ctx.beginPath();ctx.arc(v._x,v._y,3.6,0,7);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='rgba(10,14,24,.9)';ctx.lineWidth=1;ctx.stroke();});
+  // vehicle
+  const veh=PICKUP.veh;
+  if(veh&&veh.active&&PICKUP.route.length>1){
+    const tgt=PICKUP.route[veh.seg+1];
+    if(tgt){const dx=tgt.x-veh.x,dy=tgt.y-veh.y,dist=Math.hypot(dx,dy),sp=80*dt;
+      if(dist<3){veh.x=tgt.x;veh.y=tgt.y;
+        if(typeof tgt.voterIdx==='number'){VOTERS[tgt.voterIdx].st='pick';renderVoters();}
+        else if(tgt.voterIdx==='casilla'){VOTERS.forEach(v=>{if(v.st==='pick')v.st='done';});renderVoters();veh.active=false;}
+        veh.seg++;
+      } else {veh.x+=dx/dist*sp;veh.y+=dy/dist*sp;}
+    } else veh.active=false;
+  }
+  if(veh){const pl=Math.sin(t*6)*.5+.5;
+    ctx.beginPath();ctx.arc(veh.x,veh.y,7+pl*4,0,7);ctx.fillStyle='rgba(242,179,61,.18)';ctx.fill();
+    ctx.fillStyle=COL.amber;ctx.fillRect(veh.x-5,veh.y-3.5,10,7);
+    ctx.strokeStyle='rgba(10,14,24,.9)';ctx.lineWidth=1;ctx.strokeRect(veh.x-5,veh.y-3.5,10,7);}
+}
+
 /* ===================== GOTV ===================== */
 function renderGOTV(){
   const steps=[['Padrón objetivo',100,72000],['Identificados',86,61900],['Contactados',64,46100],['Comprometidos',41,29500],['Plan de traslado',28,20200]];
@@ -1839,6 +2025,7 @@ makeCanvas('intel-canvas',drawIntelBubbles,buildIntelBubbles);
 makeCanvas('intel-bars',drawIntelBars,buildIntelBars);
 makeCanvas('shield-canvas',drawShield,buildShield);
 makeCanvas('defensa-canvas',drawDefensa,buildDefensa);
+makeCanvas('pickup-canvas',drawPickup,buildPickup);
 
 attachMapTip('cmd-canvas','cmd-tip',(o,x,y)=>{
   for(const c of (o.data.col||[])){if(Math.hypot(c.px-x,c.py-y)<26)return `<b>${c.n}</b>Cobertura ${Math.round(c.cov*100)}%`;}
@@ -1851,6 +2038,7 @@ attachMapTip('tierra-canvas','tierra-tip',(o,x,y)=>{
 });
 attachMapTip('shield-canvas','shield-tip',shieldTip);
 attachMapTip('defensa-canvas','defensa-tip',defensaTip);
+attachMapTip('pickup-canvas','pickup-tip',(o,x,y)=>{for(const v of VOTERS){if(Math.hypot(v._x-x,v._y-y)<8)return `<b>${v.n}</b>${v.col} · ${VLBL[v.st]}`;}return '';});
 
 // update map coverage stats
 function syncMapStats(){
@@ -1862,6 +2050,7 @@ function syncMapStats(){
 buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
 renderIntel();renderDigital();renderTierra();renderGOTV();renderShield();renderDefensa();renderActaFlow();
 OPSTATE.posts=ri(180,420);OPSTATE.reach=ri(120000,320000);OPSTATE.replies=ri(60,180);renderOps();
+renderVoters();renderProjection();renderOpStatus();
 for(let i=0;i<8;i++)pushSignal();
 for(let i=0;i<7;i++)pushIntelFeed();
 tierraLive();
@@ -1876,6 +2065,8 @@ setInterval(renderIntel,5000);
 setInterval(tierraLive,3200);
 setInterval(defensaStep,3000);
 setInterval(opsTick,3400);
+setInterval(renderProjection,7000);
+setInterval(renderOpStatus,4000);
 setInterval(syncMapStats,1000);
 
 $('#gen-topic').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
