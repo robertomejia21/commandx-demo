@@ -350,12 +350,38 @@
   .heatgrid .hc:hover{transform:scale(1.18);box-shadow:0 0 0 2px var(--amber);z-index:2}
 
   @media(max-width:880px){
-    .app{grid-template-columns:1fr;grid-template-rows:54px auto 1fr;grid-template-areas:"brand" "side" "main"}
-    .side{flex-direction:row;overflow-x:auto;padding:8px}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;grid-template-areas:"top" "side" "main"}
+    .brand{display:none}
+    .top{grid-area:top;height:auto;min-height:50px;padding:9px 13px;flex-wrap:wrap;gap:8px 10px}
+    .top .campaign{font-size:14px}
+    .top .campaign small{display:none}
+    .top .right{gap:9px 12px;flex-wrap:wrap;font-size:10px}
+    .side{flex-direction:row;overflow-x:auto;padding:7px}
     .side .navlbl,.side .foot,.navitem .ag{display:none}
     .navitem{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;padding:8px 12px}
     .navitem.on{border-left:0;border-bottom-color:var(--amber)}
-    .top .campaign small{display:none}
+    .navitem .nm{font-size:14px}
+    .maplegend{flex-wrap:wrap;gap:7px 10px;max-width:64%}
+    .vhead{margin-bottom:16px}
+    .view{padding:18px 14px 50px}
+  }
+  @media(max-width:560px){
+    .top .clock,.top .aimode{display:none}
+    .vhead h1{font-size:25px}
+    .vhead .meta{font-size:9.5px}
+    .stat-inline{gap:14px}
+    .stat-inline .si .v{font-size:22px}
+    .mmetrics{grid-template-columns:1fr 1fr}
+    .maplegend{font-size:8px;max-width:60%;gap:5px 8px}
+    .mapstat b{font-size:16px}
+    .mapchip{font-size:9px;padding:3px 7px}
+    .ops-ctrl{width:100%}
+    .ops-ctrl .btn,.ops-ctrl select{flex:1 1 auto}
+    .kpi .num{font-size:32px}
+    .num-lg{font-size:30px}
+    .net-kpis{gap:10px;flex-wrap:wrap}
+    .modal-card{border-radius:8px}
+    .modal-f .btn{flex:1 1 auto;text-align:center}
   }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -930,8 +956,8 @@ const GEO_SON={
 /* Ciudad de Hermosillo — zona urbana (realista) + colonias */
 const GEO_HMO={
   name:'Hermosillo', meanLat:29.085,
-  poly:[[-111,29.14],[-110.96,29.15],[-110.915,29.14],[-110.89,29.115],[-110.882,29.085],[-110.89,29.055],[-110.905,29.03],[-110.94,29.018],[-110.975,29.022],[-111,29.045],[-111.018,29.075],[-111.02,29.105]],
-  rings:[[[-111,29.14],[-110.96,29.15],[-110.915,29.14],[-110.89,29.115],[-110.882,29.085],[-110.89,29.055],[-110.905,29.03],[-110.94,29.018],[-110.975,29.022],[-111,29.045],[-111.018,29.075],[-111.02,29.105]]],
+  poly:[[-111.020,29.115],[-111.006,29.134],[-110.986,29.143],[-110.965,29.151],[-110.946,29.144],[-110.929,29.150],[-110.911,29.137],[-110.896,29.117],[-110.886,29.095],[-110.892,29.072],[-110.881,29.050],[-110.901,29.031],[-110.919,29.021],[-110.940,29.016],[-110.958,29.028],[-110.949,29.046],[-110.966,29.055],[-110.986,29.050],[-111.006,29.062],[-111.019,29.081],[-111.026,29.099]],
+  rings:[[[-111.020,29.115],[-111.006,29.134],[-110.986,29.143],[-110.965,29.151],[-110.946,29.144],[-110.929,29.150],[-110.911,29.137],[-110.896,29.117],[-110.886,29.095],[-110.892,29.072],[-110.881,29.050],[-110.901,29.031],[-110.919,29.021],[-110.940,29.016],[-110.958,29.028],[-110.966,29.055],[-110.986,29.050],[-111.006,29.062],[-111.019,29.081],[-111.026,29.099]]],
   places:[{"n":"Centro","lon":-110.955,"lat":29.072,"cov":0.88},{"n":"Pitic","lon":-110.968,"lat":29.092,"cov":0.82},{"n":"Centenario","lon":-110.978,"lat":29.082,"cov":0.7},{"n":"Modelo","lon":-110.99,"lat":29.09,"cov":0.66},{"n":"San Benito","lon":-110.94,"lat":29.088,"cov":0.6},{"n":"Las Quintas","lon":-110.928,"lat":29.108,"cov":0.58},{"n":"Villa de Seris","lon":-110.952,"lat":29.045,"cov":0.5},{"n":"Olivares","lon":-110.985,"lat":29.058,"cov":0.45},{"n":"Y Griega","lon":-110.918,"lat":29.058,"cov":0.38},{"n":"Sahuaro","lon":-110.945,"lat":29.12,"cov":0.5},{"n":"Solidaridad","lon":-110.992,"lat":29.118,"cov":0.35},{"n":"Palo Verde","lon":-110.905,"lat":29.09,"cov":0.4},{"n":"Real del Carmen","lon":-110.898,"lat":29.072,"cov":0.3},{"n":"Apaches","lon":-110.93,"lat":29.04,"cov":0.32}],
   seaLabels:[{t:'RÍO SONORA',lon:-110.905,lat:29.048,c:'rgba(79,216,232,.30)',rot:-58}]
 };
