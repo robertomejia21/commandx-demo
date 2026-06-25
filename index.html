@@ -265,6 +265,15 @@
   .hbars .hb b{position:absolute;top:-15px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:8px;color:var(--text);opacity:0;transition:.3s}
   .hbars .hb:hover b{opacity:1}
 
+  /* chatbot ciudadano (WhatsApp) */
+  .chat{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;padding:4px 2px}
+  .chat .msg{max-width:82%;padding:8px 11px;border-radius:11px;font-size:12.5px;line-height:1.42;animation:slidein .3s}
+  .chat .msg.bot{align-self:flex-start;background:var(--surface2);border:1px solid var(--line);border-bottom-left-radius:3px}
+  .chat .msg.cit{align-self:flex-end;background:rgba(70,194,142,.14);border:1px solid rgba(70,194,142,.3);border-bottom-right-radius:3px}
+  .chat .msg small{display:block;font-family:var(--mono);font-size:8px;color:var(--muted2);margin-top:4px;letter-spacing:.04em}
+  .chk{font-family:var(--mono);font-size:10px}
+  .chk.ok{color:var(--green)} .chk.warn{color:var(--amber)} .chk.bad{color:var(--red)}
+
   /* sentiment gauge / bars */
   .sbar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0}
   .sbar span{display:block;height:100%;transition:width .8s ease}
@@ -441,7 +450,7 @@
       <div class="grid g3">
         <div class="card span2" style="display:flex;flex-direction:column">
           <h3>Mapa operativo · Sonora <span class="tag" id="cmd-map-pct">—%</span></h3>
-          <div class="mapwrap" style="flex:1;min-height:300px">
+          <div class="mapwrap" style="height:clamp(300px,44vh,440px)">
             <canvas id="cmd-canvas"></canvas>
             <div class="mapchips">
               <span class="mapchip on" data-layer="brigadas">Brigadas</span>
@@ -630,7 +639,7 @@
       <div class="grid g3">
         <div class="card span2" style="display:flex;flex-direction:column">
           <h3>Mapa táctico — Hermosillo · brigadas en vivo <span class="tag" id="tierra-cov2">—%</span></h3>
-          <div class="mapwrap" style="flex:1;min-height:420px">
+          <div class="mapwrap" style="height:clamp(320px,52vh,520px)">
             <canvas id="tierra-canvas"></canvas>
             <div class="mapchips">
               <span class="mapchip on" data-layer="brigadas">Brigadas</span>
@@ -692,10 +701,10 @@
       </div>
 
       <div class="card" style="margin-top:14px">
-        <h3><span>🚐 Recolección y traslado de votantes · día D <span class="tag" id="pickup-stat">—</span></span>
+        <h3><span>🟢 Recordatorios y asistencia para votar · día D <span class="tag" id="pickup-stat">—</span></span>
           <span class="ops-ctrl">
-            <button class="btn sm def" onclick="sendWhatsAppAll()">🟢 WhatsApp a todos</button>
-            <button class="btn sm" onclick="startPickupRoute()">🚐 Despachar unidad</button>
+            <button class="btn sm def" onclick="sendWhatsAppAll()">🟢 Recordatorio por WhatsApp</button>
+            <button class="btn sm" onclick="startPickupRoute()">🚐 Transporte de cortesía</button>
           </span></h3>
         <div class="stat-inline" id="pickup-kpis" style="margin-bottom:14px"></div>
         <div class="grid g2">
@@ -715,7 +724,7 @@
                 <span><i style="background:var(--cyan)"></i>Casilla</span>
               </div>
             </div>
-            <div class="notice">El agente de transporte calcula la ruta óptima por las casas confirmadas; la unidad recoge a cada votante y lo lleva a su casilla, con confirmación por WhatsApp (apegado a consentimiento y normativa).</div>
+            <div class="notice">⚖️ Recordatorios de voto y <b>transporte de cortesía para adultos mayores y personas con discapacidad</b> que lo solicitan. Sin condicionar el voto ni dádivas (apegado a la ley electoral; el acarreo es delito). La IA optimiza la ruta de acompañamiento.</div>
           </div>
         </div>
       </div>
@@ -730,7 +739,7 @@
           <button class="btn off sm" style="width:100%;margin-top:6px" onclick="simulateCrisis()" id="crisis-btn">⚠ Simular ataque</button>
           <div class="notice" style="text-align:center">Combina volumen adverso, velocidad de propagación y alcance.</div></div>
         <div class="card span2" style="display:flex;flex-direction:column"><h3>Propagación de narrativas <span class="tag">red en vivo</span></h3>
-          <div class="mapwrap" style="flex:1;min-height:280px">
+          <div class="mapwrap" style="height:clamp(260px,40vh,400px)">
             <canvas id="shield-canvas"></canvas>
             <div class="maptip" id="shield-tip"></div>
             <div class="maplegend">
@@ -2350,6 +2359,53 @@ function renderDefHr(){
   requestAnimationFrame(()=>{$$('#defhr-bars .hb').forEach((el,i)=>{el.style.height=vals[i]+'%';});});
 }
 
+/* ===== RONDA 2 de extras (todo IA + WhatsApp + celular) ===== */
+function buildExtras2(){
+  extraCard('digital',`<h3>Chatbot ciudadano · WhatsApp <span class="tag">conversacional IA</span></h3>
+    <div class="chat" id="chat-thread"></div>
+    <div class="notice">Atiende dudas, recoge reportes y agenda seguimientos 24/7. Solo necesita el WhatsApp del ciudadano.</div>`);
+  extraCard('tierra',`<h3>Verificación anti-fraude de brigadistas <span class="tag">selfie + GPS + hora</span></h3>
+    <div class="blist" id="antifraude"></div>
+    <div class="notice">Cada brigadista valida su visita con selfie, ubicación GPS y hora desde su propio celular. La IA detecta inconsistencias.</div>`);
+  extraCard('command',`<h3>Seguimiento de promesas de campaña <span class="tag">transparencia</span></h3>
+    <div class="blist" id="promesas"></div>
+    <div class="notice">Cada compromiso con avance verificable. Genera confianza y contenido positivo automáticamente.</div>`);
+  extraCard('intel',`<h3>Necesidades por colonia <span class="tag">IA · clustering</span></h3>
+    <div class="blist" id="needs"></div>
+    <div class="notice">La IA agrupa miles de mensajes y reportes para detectar la principal necesidad de cada colonia.</div>`);
+}
+const CHAT_SEQ=[
+  ['cit','Hola, ¿qué propone el candidato para el agua en mi colonia?'],
+  ['bot','¡Hola! 👋 Soy el asistente de la campaña. El plan de agua incluye rehabilitar la red y un tandeo más justo. ¿En qué colonia vives?'],
+  ['cit','En Villa de Seris'],
+  ['bot','Gracias 🙌 En Villa de Seris se priorizan 2 pozos y nueva tubería. ¿Quieres que te avisemos del próximo recorrido del candidato por ahí?'],
+  ['cit','Sí, por favor'],
+  ['bot','✅ Listo, te anoté. También puedes mandar fotos de fugas o baches por aquí y las canalizamos. ¡Gracias por participar!']
+];
+function playChat(){
+  const c=$('#chat-thread'); if(!c)return; c.innerHTML=''; let i=0;
+  const step=()=>{ if(!$('#chat-thread'))return; if(i>=CHAT_SEQ.length){setTimeout(playChat,6000);return;}
+    const [w,t]=CHAT_SEQ[i]; c.insertAdjacentHTML('beforeend',`<div class="msg ${w}">${t}<small>${w==='bot'?'Asistente IA':'Ciudadano'} · WhatsApp</small></div>`); c.scrollTop=c.scrollHeight; i++; setTimeout(step,w==='bot'?1900:1300); };
+  step();
+}
+function renderAntifraude(){
+  const b=[['Brigada 1 · Centro','ok','ok','ok','Verificado'],['Brigada 3 · Pitic','ok','ok','ok','Verificado'],['Brigada 5 · Modelo','ok','ok','warn','Revisar hora'],['Brigada 7 · Villa de Seris','ok','bad','ok','⚠ Fuera de zona'],['Brigada 9 · Oriente','ok','ok','ok','Verificado']];
+  const el=$('#antifraude'); if(!el)return;
+  el.innerHTML=b.map(r=>`<div class="brow"><div class="top"><span>${r[0]}</span>
+    <span style="color:${r[3]==='Verificado'?'var(--green)':r[4]&&r[4].includes('zona')?'var(--red)':'var(--amber)'}">${r[4]}</span></div>
+    <div style="display:flex;gap:14px;margin-top:4px"><span class="chk ${r[1]}">selfie ${r[1]==='ok'?'✓':'✗'}</span><span class="chk ${r[2]}">GPS ${r[2]==='ok'?'✓':'✗'}</span><span class="chk ${r[3]}">hora ${r[3]==='ok'?'✓':'⚠'}</span></div></div>`).join('');
+}
+function renderPromesas(){
+  const p=[['Plan de seguridad · oriente',62,'amber','en obra'],['Rehabilitación de agua',45,'','en proceso'],['Becas para jóvenes',80,'green','cumpliendo'],['Pavimentación de calles',38,'','arrancando'],['Centros de salud',55,'green','en proceso']];
+  const el=$('#promesas'); if(!el)return;
+  el.innerHTML=p.map(x=>`<div class="brow"><div class="top"><span>${x[0]}</span><span>${x[1]}% · ${x[3]}</span></div><div class="track"><i class="${x[2]}" style="width:${x[1]}%"></i></div></div>`).join('');
+}
+function renderNeeds(){
+  const n=[['Villa de Seris','Agua',81,'amber'],['Oriente','Alumbrado',69,''],['Centro','Seguridad',72,'amber'],['Las Quintas','Baches',58,''],['Modelo','Empleo',52,'green'],['Pitic','Transporte',47,'']];
+  const el=$('#needs'); if(!el)return;
+  el.innerHTML=n.map(x=>`<div class="brow"><div class="top"><span>${x[0]} <span style="color:var(--muted2)">· ${x[1]}</span></span><span>${x[2]}%</span></div><div class="track"><i class="${x[3]}" style="width:${x[2]}%"></i></div></div>`).join('');
+}
+
 /* ============================ BOOT ============================ */
 // canvases
 makeCanvas('cmd-canvas',(o,t)=>drawDistrict(o,t,0.016),o=>buildDistrict(o,{brigades:11,geo:GEO_SON}));
@@ -2384,8 +2440,9 @@ function syncMapStats(){
 }
 
 // render all
-buildExtras();buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
+buildExtras();buildExtras2();buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
 renderInfluencers();renderVoiceKPIs();renderDiaD(false);renderFactCheck();renderDefHr();
+renderAntifraude();renderPromesas();renderNeeds();playChat();
 for(let i=0;i<6;i++)pushCitizen();
 renderIntel();renderDigital();renderTierra();renderGOTV();renderShield();renderDefensa();renderActaFlow();
 OPSTATE.posts=ri(180,420);OPSTATE.reach=ri(120000,320000);OPSTATE.replies=ri(60,180);renderOps();
