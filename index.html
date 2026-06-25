@@ -26,8 +26,8 @@
   ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
   ::-webkit-scrollbar-track{background:transparent}
 
-  .app{display:grid;grid-template-columns:230px 1fr;grid-template-rows:54px 1fr;height:100%;
-    grid-template-areas:"brand top" "side main"}
+  .app{display:grid;grid-template-columns:230px 1fr;grid-template-rows:54px 1fr 30px;height:100%;
+    grid-template-areas:"brand top" "side main" "ticker ticker"}
 
   /* topbar */
   .top{grid-area:top;display:flex;align-items:center;justify-content:space-between;
@@ -47,6 +47,65 @@
   .pbtn.on{background:var(--amber);color:#0a0e18;border-color:var(--amber);font-weight:700}
   @media(max-width:880px){.pbtn{display:none}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* índice de salud (semáforo) */
+  .health{display:flex;align-items:center;gap:7px;padding:4px 11px;border-radius:20px;border:1px solid var(--line2);
+    font-family:var(--mono);font-size:11px;letter-spacing:.06em;cursor:default}
+  .health .hdot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+  .health b{font-family:var(--disp);font-size:15px;letter-spacing:0}
+  .health.ok{color:var(--green);border-color:rgba(70,194,142,.4)} .health.ok .hdot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .health.warn{color:var(--amber);border-color:rgba(242,179,61,.4)} .health.warn .hdot{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .health.crit{color:var(--red);border-color:rgba(229,87,92,.45)} .health.crit .hdot{background:var(--red);box-shadow:0 0 8px var(--red)}
+
+  /* ticker global en vivo */
+  .ticker{grid-area:ticker;display:flex;align-items:center;gap:0;background:#05080f;border-top:1px solid var(--line2);overflow:hidden;font-family:var(--mono);font-size:11px}
+  .ticker .tklab{flex:none;display:flex;align-items:center;gap:6px;height:100%;padding:0 13px;background:var(--red);color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px}
+  .ticker .tklab .d{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.3s infinite}
+  .ticker .tkwrap{flex:1;overflow:hidden;white-space:nowrap}
+  .ticker .tktrack{display:inline-block;padding-left:100%;animation:tkscroll 42s linear infinite;will-change:transform}
+  .ticker:hover .tktrack{animation-play-state:paused}
+  .ticker .ti{margin:0 26px;color:var(--muted)}
+  .ticker .ti b{color:var(--text)} .ticker .ti .sep{color:var(--amber);margin-right:8px}
+  .ticker .ti.up b{color:var(--green)} .ticker .ti.dn b{color:var(--red)} .ticker .ti.hot .sep{color:var(--red)}
+  @keyframes tkscroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+  /* toasts de incidentes */
+  #toasts{position:fixed;right:18px;bottom:44px;z-index:120;display:flex;flex-direction:column;gap:9px;max-width:330px}
+  .toast{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border:1px solid var(--line2);border-left:3px solid var(--amber);
+    border-radius:7px;padding:11px 13px;box-shadow:0 12px 34px rgba(0,0,0,.5);animation:toastin .35s cubic-bezier(.2,.9,.3,1.3)}
+  .toast.crit{border-left-color:var(--red)} .toast.ok{border-left-color:var(--green)} .toast.info{border-left-color:var(--cyan)}
+  .toast .tic{font-size:17px;line-height:1}
+  .toast .tbd{flex:1} .toast .tbd .tt{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.04em;margin-bottom:2px}
+  .toast .tbd .tx{font-size:11px;color:var(--muted);line-height:1.4} .toast .tbd .tm{font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:3px}
+  @keyframes toastin{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes toastout{to{transform:translateX(60px);opacity:0;height:0;margin:0;padding:0}}
+  .toast.out{animation:toastout .3s forwards}
+  @media(max-width:560px){#toasts{right:8px;left:8px;bottom:34px;max-width:none}}
+
+  /* muro de video (video wall) */
+  #wall{position:fixed;inset:0;z-index:200;background:radial-gradient(1200px 800px at 50% -10%,#0c1426,#05080f);display:none;flex-direction:column}
+  #wall.on{display:flex}
+  .wall-top{display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line2)}
+  .wall-top .wl{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:.14em}
+  .wall-top .wl .dot{display:inline-block;width:10px;height:10px;background:var(--amber);border-radius:2px;box-shadow:0 0 12px var(--amber);margin-right:9px;animation:pulse 2.4s infinite}
+  .wall-top .wsub{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+  .wall-top .wclock{margin-left:auto;font-family:var(--mono);font-size:15px;color:var(--text);letter-spacing:.1em}
+  .wall-top .wx{background:transparent;border:1px solid var(--line2);color:var(--muted);border-radius:6px;padding:7px 13px;cursor:pointer;font-family:var(--mono);font-size:11px;text-transform:uppercase}
+  .wall-top .wx:hover{border-color:var(--red);color:var(--red)}
+  .wall-grid{flex:1;display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:14px;padding:16px 24px 22px;min-height:0}
+  .wpanel{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative}
+  .wpanel .wph{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px}
+  .wpanel .wph .pd{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green)}
+  .wpanel.span2{grid-row:span 2}
+  .wkpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .wkpi{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:13px}
+  .wkpi .wl2{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+  .wkpi .wv{font-family:var(--disp);font-weight:800;font-size:30px;margin:5px 0 2px} .wkpi .wd{font-family:var(--mono);font-size:10px;color:var(--green)}
+  .wfeed{overflow:hidden;flex:1;display:flex;flex-direction:column;gap:7px}
+  .wfeed .wf{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:8px;line-height:1.3}
+  .wfeed .wf .wt{color:var(--amber);flex:none} .wfeed .wf b{color:var(--text)}
+  #wall-canvas{width:100%;flex:1;border-radius:8px;min-height:0}
+  @media(max-width:760px){.wall-grid{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:minmax(150px,1fr);overflow-y:auto}.wpanel.span2{grid-row:auto}}
 
   /* brand corner */
   .brand{grid-area:brand;display:flex;align-items:center;gap:10px;padding:0 20px;
@@ -368,7 +427,7 @@
   .heatgrid .hc:hover{transform:scale(1.18);box-shadow:0 0 0 2px var(--amber);z-index:2}
 
   @media(max-width:880px){
-    .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;grid-template-areas:"top" "side" "main"}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr 26px;grid-template-areas:"top" "side" "main" "ticker"}
     .brand{display:none}
     .top{grid-area:top;height:auto;min-height:50px;padding:9px 13px;flex-wrap:wrap;gap:8px 10px}
     .top .campaign{font-size:14px}
@@ -410,8 +469,10 @@
   <div class="top">
     <div class="campaign">Campaña Estatal · Sonora<small>Hermosillo · Sonora, México</small></div>
     <div class="right">
+      <span class="health ok" id="health" title="Índice de salud de campaña"><span class="hdot"></span>SALUD <b id="health-n">—</b></span>
       <span class="countdown" id="countdown">D-00</span>
       <span class="clock" id="clock">--:--:--</span>
+      <button class="pbtn" id="wall-btn" onclick="openWall()">▦ Muro</button>
       <button class="pbtn" id="pres-btn" onclick="togglePresentation()">▶ Presentación</button>
       <span class="aimode demo" id="aimode">IA: demo</span>
       <span class="sysbadge"><span class="d"></span>EN OPERACIÓN</span>
@@ -801,6 +862,39 @@
     </section>
 
   </main>
+
+  <!-- ticker global en vivo -->
+  <div class="ticker">
+    <div class="tklab"><span class="d"></span>EN VIVO</div>
+    <div class="tkwrap"><div class="tktrack" id="tktrack"></div></div>
+  </div>
+</div>
+
+<!-- toasts de incidentes -->
+<div id="toasts"></div>
+
+<!-- ============ MURO DE VIDEO (VIDEO WALL) ============ -->
+<div id="wall">
+  <div class="wall-top">
+    <div class="wl"><span class="dot"></span>COMMANDX · MURO SITUACIONAL</div>
+    <div class="wsub" id="wall-sub">Sonora · Hermosillo</div>
+    <div class="wclock" id="wall-clock">--:--:--</div>
+    <button class="wx" onclick="closeWall()">✕ Salir del muro</button>
+  </div>
+  <div class="wall-grid">
+    <div class="wpanel span2">
+      <div class="wph"><span class="pd"></span>Mapa de operaciones · Sonora en vivo</div>
+      <canvas id="wall-canvas"></canvas>
+    </div>
+    <div class="wpanel">
+      <div class="wph"><span class="pd"></span>Indicadores clave</div>
+      <div class="wkpis" id="wall-kpis"></div>
+    </div>
+    <div class="wpanel">
+      <div class="wph"><span class="pd"></span>Feed de incidentes · todas las suites</div>
+      <div class="wfeed" id="wall-feed"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ============ PANEL DE DETALLE DE AGENTE ============ -->
@@ -2439,6 +2533,94 @@ function syncMapStats(){
   const tc=CANVASES['tierra-canvas'];if(tc&&tc.data.coverage!=null){const p=Math.round(tc.data.coverage);$('#tierra-map-cov').textContent=p+'%';}
 }
 
+/* ===================================================================== */
+/* ===== COORDINADOR DE PANTALLA · muro de video, salud, ticker, toasts == */
+/* ===================================================================== */
+
+/* ---- Índice de salud de campaña (semáforo único) ---- */
+function campaignHealth(){
+  // pondera intención, sentimiento, riesgo Shield y cobertura territorial
+  const intent=clamp((STATE.intent-30)/20,0,1);            // 30→0, 50→1
+  const sent=clamp((STATE.sent+20)/70,0,1);                // -20→0, 50→1
+  const risk=SHIELD?clamp(1-SHIELD.risk/100,0,1):0.6;      // riesgo bajo = bueno
+  const tc=CANVASES['tierra-canvas']; const cov=tc&&tc.data.coverage!=null?clamp(tc.data.coverage/100,0,1):0.5;
+  const score=Math.round((intent*0.34+sent*0.24+risk*0.24+cov*0.18)*100);
+  return clamp(score,0,99);
+}
+function renderHealth(){
+  const el=$('#health'),n=$('#health-n'); if(!el)return;
+  const s=campaignHealth(); n.textContent=s;
+  el.classList.remove('ok','warn','crit');
+  el.classList.add(s>=62?'ok':s>=45?'warn':'crit');
+}
+
+/* ---- Ticker global en vivo ---- */
+const TICKER_SEED=[
+  {c:'hot',t:'INTEL',x:'pico de menciones detectado en Cajeme — IA clasificando sentimiento'},
+  {c:'up',t:'GOTV',x:'1,240 recordatorios entregados por WhatsApp en la última hora'},
+  {c:'',t:'TIERRA',x:'brigada 07 completó manzana en Villa de Seris · 38 casas visitadas'},
+  {c:'',t:'DIGITAL',x:'chatbot ciudadano resolvió 312 dudas hoy · 0 en espera'},
+  {c:'dn',t:'SHIELD',x:'narrativa adversa contenida — 4 desmentidos publicados'},
+  {c:'',t:'DEFENSA',x:'1,118 / 4,012 actas pre-validadas por OCR · 0 inconsistencias graves'},
+];
+let TICKER=[...TICKER_SEED];
+function tickerItem(it){const cl=it.c?(' '+it.c):'';return `<span class="ti${cl}"><span class="sep">▸ ${it.t}</span><b>${it.x}</b></span>`;}
+function renderTicker(){const tr=$('#tktrack');if(!tr)return;tr.innerHTML=TICKER.map(tickerItem).join('');}
+function pushTicker(it){TICKER.unshift(it);if(TICKER.length>14)TICKER.pop();renderTicker();}
+
+/* ---- Toasts de incidentes en vivo ---- */
+function toast(opt){
+  const wrap=$('#toasts');if(!wrap)return;
+  const el=document.createElement('div');
+  el.className='toast '+(opt.kind||'info');
+  el.innerHTML=`<div class="tic">${opt.ic||'●'}</div><div class="tbd"><div class="tt">${opt.title}</div><div class="tx">${opt.text}</div><div class="tm">${opt.meta||'ahora · IA'}</div></div>`;
+  wrap.appendChild(el);
+  while(wrap.children.length>4)wrap.removeChild(wrap.firstChild);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320);},opt.ttl||6500);
+}
+const INCIDENTS=[
+  {kind:'crit',ic:'🛡️',title:'Shield · narrativa adversa',text:'Bot-cluster amplificando rumor en X. Equipo de respuesta activado.',meta:'detección automática'},
+  {kind:'ok',ic:'✅',title:'Defensa · acta validada',text:'Casilla 0421-B conciliada con PREP. Sin inconsistencias.',meta:'OCR + validador IA'},
+  {kind:'info',ic:'📈',title:'Intel · tendencia',text:'"Agua en Hermosillo" sube 38% en menciones. Sugerencia de mensaje lista.',meta:'escucha activa'},
+  {kind:'ok',ic:'🟢',title:'GOTV · asistencia',text:'14 adultos mayores confirmaron transporte de cortesía en sección 1207.',meta:'WhatsApp'},
+  {kind:'info',ic:'🏠',title:'Tierra · cobertura',text:'Brigada 03 superó 90% de su ruta en Centro. Fotos verificadas con GPS.',meta:'anti-fraude'},
+  {kind:'info',ic:'💬',title:'Digital · viralidad',text:'Reel de propuesta de seguridad superó 120k reproducciones.',meta:'war room'},
+];
+function pushIncident(){toast(pick(INCIDENTS));}
+
+/* ---- Muro de video (video wall) ---- */
+let _wallTimer=null;
+function openWall(){
+  const w=$('#wall');if(!w)return;
+  w.classList.add('on'); $('#wall-btn').classList.add('on');
+  renderWall();
+  const wc=CANVASES['wall-canvas']; if(wc)requestAnimationFrame(()=>wc.resize());
+  clearInterval(_wallTimer); _wallTimer=setInterval(renderWall,2500);
+}
+function closeWall(){
+  const w=$('#wall');if(!w)return;
+  w.classList.remove('on'); $('#wall-btn').classList.remove('on');
+  clearInterval(_wallTimer);_wallTimer=null;
+}
+function renderWall(){
+  if(!$('#wall').classList.contains('on'))return;
+  $('#wall-clock').textContent=new Date().toLocaleTimeString('es-MX',{hour12:false});
+  const tc=CANVASES['tierra-canvas']; const cov=tc&&tc.data.coverage!=null?Math.round(tc.data.coverage):'—';
+  const kp=[
+    {l:'Intención de voto',v:STATE.intent.toFixed(1)+'%',d:'▲ liderando'},
+    {l:'Sentimiento neto',v:'+'+Math.round(STATE.sent),d:'▲ favorable'},
+    {l:'Votantes ID',v:fmtN(STATE.voters),d:'▲ base movilizable'},
+    {l:'Salud campaña',v:campaignHealth(),d:'índice global'},
+    {l:'Riesgo (Shield)',v:(SHIELD?Math.round(SHIELD.risk):41)+'/100',d:'monitoreo 24/7'},
+    {l:'Cobertura tierra',v:cov+(cov==='—'?'':'%'),d:'casa por casa'},
+  ];
+  $('#wall-kpis').innerHTML=kp.map(k=>`<div class="wkpi"><div class="wl2">${k.l}</div><div class="wv">${k.v}</div><div class="wd">${k.d}</div></div>`).join('');
+  $('#wall-feed').innerHTML=TICKER.slice(0,7).map(it=>`<div class="wf"><span class="wt">▸ ${it.t}</span><b>${it.x}</b></div>`).join('');
+}
+makeCanvas('wall-canvas',(o,t)=>{ if(!$('#wall').classList.contains('on'))return; drawDistrict(o,t,0.016); },o=>buildDistrict(o,{brigades:14,geo:GEO_SON}));
+// cerrar muro con Escape
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#wall').classList.contains('on'))closeWall();});
+
 // render all
 buildExtras();buildExtras2();buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
 renderInfluencers();renderVoiceKPIs();renderDiaD(false);renderFactCheck();renderDefHr();
@@ -2450,8 +2632,23 @@ renderVoters();renderProjection();renderOpStatus();
 for(let i=0;i<8;i++)pushSignal();
 for(let i=0;i<7;i++)pushIntelFeed();
 tierraLive();
+renderHealth();renderTicker();
+setTimeout(pushIncident,3500);
 
 // intervals
+setInterval(renderHealth,2800);
+setInterval(pushIncident,9000);
+setInterval(()=>{ // alimentar el ticker con eventos vivos
+  const ev=[
+    {c:'up',t:'GOTV',x:fmtN(ri(40,180))+' recordatorios entregados por WhatsApp'},
+    {c:'',t:'TIERRA',x:'brigada '+String(ri(1,13)).padStart(2,'0')+' avanzó '+ri(6,40)+' casas en ruta'},
+    {c:'hot',t:'INTEL',x:pick(['agua','seguridad','empleo','salud','transporte'])+' sube '+ri(8,44)+'% en menciones'},
+    {c:'',t:'DEFENSA',x:fmtN(ri(20,90))+' actas nuevas pre-validadas por OCR'},
+    {c:'dn',t:'SHIELD',x:'riesgo en '+(SHIELD?Math.round(SHIELD.risk):41)+'/100 · monitoreo activo'},
+    {c:'',t:'DIGITAL',x:'chatbot resolvió '+ri(8,60)+' dudas ciudadanas'},
+  ];
+  pushTicker(pick(ev));
+},4500);
 setInterval(pushSignal,2200);
 setInterval(renderAgents,3000);
 setInterval(rotateTicker,1900);
