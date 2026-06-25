@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CommandX · Sala de Mando — Demo Interactivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070A12; --bg2:#0B0F1C; --surface:#101728; --surface2:#16203a;
+    --line:rgba(125,145,185,.10); --line2:rgba(125,145,185,.18);
+    --amber:#F2B33D; --amber-soft:rgba(242,179,61,.12);
+    --cobalt:#4D82F5; --cobalt-soft:rgba(77,130,245,.12);
+    --cyan:#4FD8E8; --red:#E5575C; --green:#46C28E; --violet:#A78BFA;
+    --text:#EAEEF7; --muted:#8C97AF; --muted2:#5B6883;
+    --disp:'Saira Condensed',system-ui,sans-serif;
+    --body:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  .app{display:grid;grid-template-columns:230px 1fr;grid-template-rows:54px 1fr;height:100%;
+    grid-template-areas:"brand top" "side main"}
+
+  /* topbar */
+  .top{grid-area:top;display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;border-bottom:1px solid var(--line);background:var(--bg2);gap:18px}
+  .top .campaign{font-family:var(--disp);font-weight:700;letter-spacing:.06em;font-size:17px;text-transform:uppercase}
+  .top .campaign small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--muted2);font-weight:400}
+  .top .right{display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+  .countdown{color:var(--amber);font-weight:700}
+  .clock{color:var(--text)}
+  .sysbadge{display:flex;align-items:center;gap:7px;color:var(--green);text-transform:uppercase}
+  .sysbadge .d{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2.4s infinite}
+  .aimode{padding:5px 10px;border:1px solid var(--line2);border-radius:3px;text-transform:uppercase;font-size:10px}
+  .aimode.live{color:var(--cyan);border-color:rgba(79,216,232,.4)}
+  .aimode.demo{color:var(--muted2)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* brand corner */
+  .brand{grid-area:brand;display:flex;align-items:center;gap:10px;padding:0 20px;
+    border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:var(--bg2)}
+  .brand .dot{width:9px;height:9px;background:var(--amber);border-radius:2px;box-shadow:0 0 12px var(--amber);animation:pulse 2.6s infinite}
+  .brand b{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:.12em}
+
+  /* sidebar */
+  .side{grid-area:side;border-right:1px solid var(--line);background:var(--bg2);padding:14px 0;overflow-y:auto;display:flex;flex-direction:column}
+  .navlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--muted2);text-transform:uppercase;padding:10px 20px 8px}
+  .navitem{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;border-left:2px solid transparent;transition:all .18s;position:relative}
+  .navitem:hover{background:var(--surface)}
+  .navitem.on{background:linear-gradient(90deg,var(--amber-soft),transparent);border-left-color:var(--amber)}
+  .navitem .ix{font-family:var(--mono);font-size:10px;color:var(--muted2);width:26px}
+  .navitem.on .ix{color:var(--amber)}
+  .navitem .nm{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:.05em;text-transform:uppercase}
+  .navitem .ag{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--muted2);display:flex;align-items:center;gap:5px}
+  .navitem .ag .d{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+  .side .foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase}
+
+  /* main */
+  .main{grid-area:main;overflow-y:auto;position:relative;
+    background:
+      radial-gradient(900px 600px at 85% -5%, rgba(77,130,245,.06),transparent 60%),
+      linear-gradient(var(--line) 1px,transparent 1px) 0 0/48px 48px,
+      linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/48px 48px,
+      var(--bg)}
+  .view{display:none;padding:26px clamp(18px,2.6vw,34px) 60px;animation:fade .4s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .vhead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap}
+  .vhead .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--amber);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+  .vhead .eyebrow::before{content:"";width:22px;height:1px;background:var(--amber)}
+  .vhead h1{font-family:var(--disp);font-weight:800;font-size:clamp(30px,3.8vw,46px);text-transform:uppercase;letter-spacing:.01em;line-height:1;margin-top:8px}
+  .vhead .meta{font-family:var(--mono);font-size:10.5px;color:var(--muted2);letter-spacing:.1em;text-align:right;text-transform:uppercase}
+
+  /* grid + cards */
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}}
+  @media(max-width:760px){.g4,.g3,.g2{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--line);border-radius:6px;padding:18px;position:relative}
+  .card.span2{grid-column:span 2}
+  @media(max-width:760px){.card.span2{grid-column:span 1}}
+  .card h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+  .card h3 .tag{color:var(--amber)}
+
+  /* KPI tile */
+  .kpi .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase}
+  .kpi .num{font-family:var(--disp);font-weight:800;font-size:40px;line-height:1.05;margin:6px 0 4px}
+  .kpi .delta{font-family:var(--mono);font-size:11px}
+  .kpi .delta.up{color:var(--green)} .kpi .delta.down{color:var(--red)}
+  .kpi .spark{margin-top:10px}
+
+  /* feed */
+  .feed{display:flex;flex-direction:column;gap:0;max-height:340px;overflow-y:auto}
+  .feeditem{display:flex;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line);animation:slidein .4s ease;cursor:default}
+  .feeditem:hover{background:rgba(125,145,185,.04)}
+  @keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  .feeditem .pip{width:6px;height:6px;border-radius:50%;margin-top:6px;flex:none}
+  .pip.pos{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .pip.neg{background:var(--red);box-shadow:0 0 6px var(--red)}
+  .pip.neu{background:var(--muted2)}
+  .feeditem .bd{flex:1;min-width:0}
+  .feeditem .bd .t{font-size:13px;color:var(--text);line-height:1.4}
+  .feeditem .bd .m{font-family:var(--mono);font-size:9.5px;color:var(--muted2);letter-spacing:.08em;margin-top:3px;text-transform:uppercase}
+
+  /* agent strip */
+  .agents{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+  .agents i{width:9px;height:9px;border-radius:2px;background:var(--line2);display:block;transition:background .4s,box-shadow .4s}
+  .agents i.act{background:var(--green);box-shadow:0 0 5px var(--green)}
+  .agents i.work{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+  .agents i{cursor:pointer}
+  .agents i:hover{outline:1px solid var(--text);outline-offset:1px}
+
+  /* agent roster */
+  .aroster{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+  @media(max-width:760px){.aroster{grid-template-columns:1fr}}
+  .arow{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .arow .ad{width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--muted2);transition:.3s}
+  .arow .ad.act{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .arow .ad.work{background:var(--amber);box-shadow:0 0 7px var(--amber)}
+  .arow .ab{min-width:0;flex:1}
+  .arow b{font-size:12.5px;font-family:var(--disp);font-weight:600;letter-spacing:.02em;display:flex;justify-content:space-between;gap:8px}
+  .arow b .st{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;font-weight:400;flex:none}
+  .arow b .st.work{color:var(--amber)}
+  .arow small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--muted2);margin:2px 0 4px}
+  .arow .atask{font-size:11.5px;color:var(--muted);line-height:1.35}
+  .arow .atask.work{color:var(--amber)}
+  .ticker{margin-top:12px;padding:9px 11px;border:1px solid var(--line2);border-radius:5px;background:var(--bg);font-family:var(--mono);font-size:11px;color:var(--text);display:flex;gap:9px;align-items:center;overflow:hidden;white-space:nowrap}
+  .ticker .tk{color:var(--amber);flex:none}
+  .ticker b{color:var(--cyan);font-family:var(--mono);font-weight:500}
+
+  /* social network rows (Intel) */
+  .net{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+  .net:last-child{border-bottom:0}
+  .net-ic{width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;font-size:15px;color:#0a0e18}
+  .net-bd{flex:1;min-width:0}
+  .net-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px}
+  .net-top b{font-family:var(--disp);font-weight:600;letter-spacing:.02em;font-size:15px}
+  .net-top .mn{font-family:var(--disp);font-weight:800;font-size:17px;margin-left:auto}
+  .net-tr{font-family:var(--mono);font-size:10px;flex:none}
+  .net-tr.up{color:var(--green)} .net-tr.down{color:var(--red)}
+  .net-bar{height:6px;border-radius:3px;overflow:hidden;display:flex;background:var(--line);margin-bottom:6px}
+  .net-bar span{height:100%;display:block;transition:width .8s}
+  .net-bar .p{background:var(--green)} .net-bar .u{background:var(--muted2)} .net-bar .n{background:var(--red)}
+  .net-kpis{display:flex;gap:18px;font-family:var(--mono);font-size:10px;color:var(--muted2)}
+  .net-kpis b{color:var(--text)}
+
+  /* agent detail modal */
+  .modal{position:fixed;inset:0;background:rgba(4,6,12,.72);backdrop-filter:blur(3px);z-index:50;display:none;align-items:center;justify-content:center;padding:20px;animation:fade .25s}
+  .modal.on{display:flex}
+  .modal-card{width:min(580px,96vw);max-height:90vh;overflow-y:auto;background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--line2);border-radius:10px;box-shadow:0 30px 80px -20px #000;animation:slidein .3s}
+  .modal-h{display:flex;align-items:flex-start;gap:14px;padding:20px 22px;border-bottom:1px solid var(--line)}
+  .mh-ic{width:46px;height:46px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;color:#0a0e18;font-size:13px}
+  .mh-bd{flex:1;min-width:0}
+  .modal-h h2{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:.02em;line-height:1.1}
+  .mh-sub{font-family:var(--mono);font-size:10.5px;color:var(--muted2);margin-top:5px;line-height:1.4}
+  .mh-chip{display:inline-block;font-family:var(--mono);font-size:9.5px;padding:3px 10px;border-radius:20px;margin-top:8px;letter-spacing:.06em}
+  .modal-x{cursor:pointer;color:var(--muted2);font-size:20px;line-height:1;background:none;border:0;padding:2px 6px}
+  .modal-x:hover{color:var(--text)}
+  .modal-b{padding:18px 22px}
+  .modal-b h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;margin:0 0 10px}
+  .mmetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  @media(max-width:560px){.mmetrics{grid-template-columns:repeat(2,1fr)}}
+  .mmetric{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:11px}
+  .mmetric .v{font-family:var(--disp);font-weight:800;font-size:23px}
+  .mmetric .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;margin-top:3px}
+  .mlog{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 12px;max-height:190px;overflow-y:auto}
+  .mlog .lg{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;align-items:center}
+  .mlog .lg:last-child{border-bottom:0}
+  .mlog .lg .ts{font-family:var(--mono);font-size:10px;color:var(--muted2);flex:none}
+  .mlog .lg .st{margin-left:auto;font-family:var(--mono);font-size:9px;flex:none}
+  .modal-f{display:flex;gap:10px;padding:16px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+
+  /* multi-agent flow (Defensa) */
+  .flow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+  .fnode{flex:1;min-width:148px;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:13px;transition:.3s;opacity:.45}
+  .fnode.active{opacity:1;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+  .fnode.done{opacity:1;border-color:rgba(70,194,142,.5)}
+  .fnode .fn-h{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .fnode .fn-ic{width:26px;height:26px;border-radius:7px;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;background:var(--line);color:var(--muted)}
+  .fnode.active .fn-ic{background:var(--amber);color:#0a0e18}
+  .fnode.done .fn-ic{background:var(--green);color:#0a0e18}
+  .fnode .fn-t{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.02em;line-height:1.1}
+  .fnode .fn-ag{font-family:var(--mono);font-size:8.5px;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+  .fnode .fn-st{font-family:var(--mono);font-size:10px;color:var(--muted);min-height:14px}
+  .fnode .fn-st.work{color:var(--amber)} .fnode .fn-st.ok{color:var(--green)}
+  .fnode .fn-bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:9px}
+  .fnode .fn-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--amber),#ffd27a);transition:width .12s}
+  .farrow{display:flex;align-items:center;color:var(--muted2);font-size:15px;flex:none}
+  @media(max-width:760px){.farrow{display:none}}
+  .acta{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:14px;font-family:var(--mono);font-size:12px}
+  .acta .ar{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .acta .ar:last-child{border-bottom:0}
+  .acta .ar b{color:var(--text)}
+
+  /* sentiment gauge / bars */
+  .sbar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0}
+  .sbar span{display:block;height:100%;transition:width .8s ease}
+  .sbar .p{background:var(--green)} .sbar .n{background:var(--red)} .sbar .u{background:var(--muted2)}
+  .slegend{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .slegend b{color:var(--text)}
+
+  /* bars list */
+  .blist{display:flex;flex-direction:column;gap:11px}
+  .brow .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+  .brow .top span:last-child{font-family:var(--mono);color:var(--muted)}
+  .track{height:7px;background:var(--line);border-radius:4px;overflow:hidden}
+  .track i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cobalt),var(--cyan));transition:width .8s ease}
+  .track i.amber{background:linear-gradient(90deg,var(--amber),#ffd27a)}
+  .track i.green{background:linear-gradient(90deg,var(--green),#7ee0b4)}
+
+  /* CANVAS map wrapper */
+  .mapwrap{position:relative;width:100%;border-radius:6px;overflow:hidden;background:radial-gradient(120% 120% at 30% 10%,rgba(77,130,245,.05),transparent 60%),#080c16;border:1px solid var(--line)}
+  .mapwrap canvas{display:block;width:100%;height:100%}
+  .maptip{position:absolute;pointer-events:none;background:rgba(8,12,22,.94);border:1px solid var(--line2);border-radius:5px;padding:8px 11px;font-family:var(--mono);font-size:10.5px;color:var(--text);opacity:0;transform:translate(-50%,-130%);transition:opacity .15s;white-space:nowrap;z-index:5;box-shadow:0 10px 30px -10px #000}
+  .maptip b{color:var(--amber);display:block;font-size:11.5px;margin-bottom:3px;font-family:var(--disp);letter-spacing:.04em}
+  .maptip.on{opacity:1}
+  .mapchips{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:4}
+  .mapchip{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;padding:4px 9px;border-radius:20px;background:rgba(8,12,22,.7);border:1px solid var(--line2);color:var(--muted);cursor:pointer;transition:.2s}
+  .mapchip:hover{border-color:var(--amber);color:var(--text)}
+  .mapchip.on{background:var(--amber-soft);border-color:var(--amber);color:var(--amber)}
+  .mapstat{position:absolute;bottom:10px;right:12px;z-index:4;font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;background:rgba(8,12,22,.6);padding:7px 10px;border-radius:5px;border:1px solid var(--line)}
+  .mapstat b{font-family:var(--disp);font-size:20px;color:var(--green);display:block;letter-spacing:.03em}
+  .maplegend{position:absolute;bottom:10px;left:12px;z-index:4;display:flex;gap:13px;font-family:var(--mono);font-size:9.5px;color:var(--muted)}
+  .maplegend span{display:flex;align-items:center;gap:6px}
+  .maplegend i{width:9px;height:9px;border-radius:2px;display:block}
+
+  /* alerts */
+  .alert{display:flex;gap:10px;padding:11px;border:1px solid var(--line);border-left-width:3px;border-radius:4px;margin-bottom:9px;background:var(--bg2)}
+  .alert.hi{border-left-color:var(--red)} .alert.md{border-left-color:var(--amber)} .alert.lo{border-left-color:var(--cobalt)}
+  .alert .lv{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;flex:none;padding-top:2px}
+  .alert.hi .lv{color:var(--red)} .alert.md .lv{color:var(--amber)} .alert.lo .lv{color:var(--cobalt)}
+  .alert .tx{font-size:12.5px;line-height:1.4;color:var(--text)}
+  .alert .tx small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--muted2);margin-top:3px;letter-spacing:.06em}
+
+  /* pills/chips */
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:6px 11px;border:1px solid var(--line2);border-radius:20px;color:var(--muted);cursor:default}
+  .chip.hot{color:var(--amber);border-color:rgba(242,179,61,.4)}
+
+  /* console / generator */
+  .console{display:flex;gap:8px;margin-bottom:14px}
+  .console input{flex:1;background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:12px 14px;color:var(--text);font-family:var(--body);font-size:14px;outline:none}
+  .console input:focus{border-color:var(--amber)}
+  .console select{background:var(--bg);border:1px solid var(--line2);border-radius:4px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:0 10px;outline:none}
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:12px 20px;border-radius:4px;
+    border:1px solid var(--amber);background:var(--amber);color:#0A0E18;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .btn:hover{box-shadow:0 8px 22px -8px var(--amber)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .btn.ghost{background:transparent;color:var(--text);border-color:var(--line2)}
+  .output{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:16px;min-height:120px;font-size:13.5px;line-height:1.6;color:var(--text);white-space:pre-wrap}
+  .output .ph{color:var(--muted2)}
+  .typing::after{content:"▋";color:var(--amber);animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* phone/tweet preview */
+  .preview{background:#0c1322;border:1px solid var(--line2);border-radius:14px;padding:15px;margin-top:4px}
+  .preview .ph-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .preview .ava{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--amber),#b9791a);flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;color:#0a0e18;font-size:16px}
+  .preview .who b{display:block;font-size:13px}
+  .preview .who span{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+  .preview .ph-body{font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+  .preview .ph-foot{display:flex;gap:22px;margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+
+  .num-lg{font-family:var(--disp);font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1}
+  .stat-inline{display:flex;gap:26px;flex-wrap:wrap;margin-top:4px}
+  .stat-inline .si .v{font-family:var(--disp);font-weight:700;font-size:26px}
+  .stat-inline .si .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase;margin-top:3px}
+
+  .gauge-wrap{display:flex;align-items:center;gap:18px}
+  .ring{position:relative;width:120px;height:120px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .ctr .v{font-family:var(--disp);font-weight:800;font-size:30px;line-height:1}
+  .ring .ctr .k{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase}
+
+  .funnel{display:flex;flex-direction:column;gap:8px}
+  .fstep{display:flex;align-items:center;gap:12px}
+  .fstep .bar{height:34px;border-radius:4px;background:linear-gradient(90deg,var(--cobalt),var(--cyan));display:flex;align-items:center;padding:0 12px;color:#06101f;font-weight:700;font-family:var(--disp);font-size:18px;transition:width 1s cubic-bezier(.2,.8,.2,1);min-width:60px;white-space:nowrap}
+  .fstep .lb{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;width:130px;flex:none}
+
+  .notice{font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.06em;margin-top:10px;line-height:1.5}
+
+  /* propensity heat grid (interactive) */
+  .heatgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+  .heatgrid .hc{aspect-ratio:1;border-radius:3px;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+  .heatgrid .hc:hover{transform:scale(1.18);box-shadow:0 0 0 2px var(--amber);z-index:2}
+
+  @media(max-width:880px){
+    .app{grid-template-columns:1fr;grid-template-rows:54px auto 1fr;grid-template-areas:"brand" "side" "main"}
+    .side{flex-direction:row;overflow-x:auto;padding:8px}
+    .side .navlbl,.side .foot,.navitem .ag{display:none}
+    .navitem{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;padding:8px 12px}
+    .navitem.on{border-left:0;border-bottom-color:var(--amber)}
+    .top .campaign small{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand"><span class="dot"></span><b>COMMANDX</b></div>
+  <div class="top">
+    <div class="campaign">Campaña Estatal · Sonora<small>Hermosillo · Sonora, México</small></div>
+    <div class="right">
+      <span class="countdown" id="countdown">D-00</span>
+      <span class="clock" id="clock">--:--:--</span>
+      <span class="aimode demo" id="aimode">IA: demo</span>
+      <span class="sysbadge"><span class="d"></span>Sistema en línea</span>
+    </div>
+  </div>
+
+  <nav class="side">
+    <div class="navlbl">Centro de mando</div>
+    <div class="navitem on" data-v="command"><span class="ix">S//07</span><span class="nm">Command</span><span class="ag"><span class="d"></span>14</span></div>
+    <div class="navlbl">Suites operativas</div>
+    <div class="navitem" data-v="intel"><span class="ix">S//01</span><span class="nm">Intel</span><span class="ag"><span class="d"></span>16</span></div>
+    <div class="navitem" data-v="digital"><span class="ix">S//02</span><span class="nm">Digital</span><span class="ag"><span class="d"></span>12</span></div>
+    <div class="navitem" data-v="tierra"><span class="ix">S//03</span><span class="nm">Tierra</span><span class="ag"><span class="d"></span>13</span></div>
+    <div class="navitem" data-v="gotv"><span class="ix">S//04</span><span class="nm">GOTV</span><span class="ag"><span class="d"></span>11</span></div>
+    <div class="navitem" data-v="shield"><span class="ix">S//05</span><span class="nm">Shield</span><span class="ag"><span class="d"></span>9</span></div>
+    <div class="navitem" data-v="defensa"><span class="ix">S//06</span><span class="nm">Defensa</span><span class="ag"><span class="d"></span>14</span></div>
+    <div class="foot">89 agentes · iAgent SAS</div>
+  </nav>
+
+  <main class="main" id="main">
+
+    <!-- ============ COMMAND ============ -->
+    <section class="view on" data-view="command">
+      <div class="vhead">
+        <div><div class="eyebrow">Centro de mando</div><h1>Panorama general</h1></div>
+        <div class="meta">Última sincronización<br><span id="syncts">en vivo</span></div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:14px">
+        <div class="card kpi"><div class="lab">Intención de voto</div><div class="num" id="k-intent">—</div><div class="delta up" id="k-intent-d">▲ 0.0 pts</div><div class="spark" id="k-intent-spark"></div></div>
+        <div class="card kpi"><div class="lab">Sentimiento neto</div><div class="num" id="k-sent">—</div><div class="delta up" id="k-sent-d">▲ 0%</div><div class="spark" id="k-sent-spark"></div></div>
+        <div class="card kpi"><div class="lab">Alcance hoy</div><div class="num" id="k-reach">—</div><div class="delta up" id="k-reach-d">▲ 0%</div><div class="spark" id="k-reach-spark"></div></div>
+        <div class="card kpi"><div class="lab">Votantes identificados</div><div class="num" id="k-voters">—</div><div class="delta up" id="k-voters-d">▲ 0</div><div class="spark" id="k-voters-spark"></div></div>
+      </div>
+
+      <div class="grid g3">
+        <div class="card span2" style="display:flex;flex-direction:column">
+          <h3>Mapa operativo · Sonora <span class="tag" id="cmd-map-pct">—%</span></h3>
+          <div class="mapwrap" style="flex:1;min-height:300px">
+            <canvas id="cmd-canvas"></canvas>
+            <div class="mapchips">
+              <span class="mapchip on" data-layer="brigadas">Brigadas</span>
+              <span class="mapchip on" data-layer="calor">Calor</span>
+              <span class="mapchip" data-layer="senales">Señales</span>
+            </div>
+            <div class="maptip" id="cmd-tip"></div>
+            <div class="maplegend">
+              <span><i style="background:var(--green)"></i>Cubierta</span>
+              <span><i style="background:rgba(77,130,245,.6)"></i>En proceso</span>
+              <span><i style="background:var(--amber)"></i>Brigada</span>
+            </div>
+            <div class="mapstat"><b id="cmd-map-cov">0%</b>cobertura territorial</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Estado de agentes <span class="tag" id="agent-count">89 activos</span></h3>
+          <div class="agents" id="cmd-agents"></div>
+          <div class="notice">Cada bloque es un agente IA. <span style="color:var(--green)">Verde</span> = monitoreando · <span style="color:var(--amber)">ámbar</span> = ejecutando tarea.</div>
+          <h3 style="margin-top:18px">Sentimiento agregado</h3>
+          <div class="sbar" id="cmd-sbar"><span class="p" style="width:52%"></span><span class="u" style="width:30%"></span><span class="n" style="width:18%"></span></div>
+          <div class="slegend"><span>Pos <b id="s-pos">52%</b></span><span>Neu <b id="s-neu">30%</b></span><span>Neg <b id="s-neg">18%</b></span></div>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card span2">
+          <h3>Señales en tiempo real <span class="tag" id="signal-rate">— / min</span></h3>
+          <div class="feed" id="cmd-feed"></div>
+        </div>
+        <div class="card">
+          <h3>Alertas activas <span class="tag" id="alert-n">—</span></h3>
+          <div id="cmd-alerts"></div>
+          <h3 style="margin-top:14px">Temas que se mueven</h3>
+          <div class="chips" id="cmd-topics"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ INTEL ============ -->
+    <section class="view" data-view="intel">
+      <div class="vhead"><div><div class="eyebrow">S//01 · Inteligencia</div><h1>Escucha activa</h1></div>
+        <div class="meta">Fuentes monitoreadas<br><span style="color:var(--text)">X · FB · IG · TikTok · prensa · audio</span></div></div>
+      <!-- KPIs globales de escucha -->
+      <div class="grid g4" style="margin-bottom:14px">
+        <div class="card kpi"><div class="lab">Menciones · hoy</div><div class="num" id="ik-menc">—</div><div class="delta up" id="ik-menc-d">▲ 0%</div><div class="spark" id="ik-menc-spark"></div></div>
+        <div class="card kpi"><div class="lab">Alcance estimado</div><div class="num" id="ik-reach">—</div><div class="delta up" id="ik-reach-d">▲ 0%</div><div class="spark" id="ik-reach-spark"></div></div>
+        <div class="card kpi"><div class="lab">Velocidad</div><div class="num" id="ik-rate">—</div><div class="delta" style="color:var(--muted2)">menciones / min</div><div class="spark" id="ik-rate-spark"></div></div>
+        <div class="card kpi"><div class="lab">Share of Voice</div><div class="num" id="ik-sov">—</div><div class="delta up" id="ik-sov-d">▲ vs rival</div><div class="spark" id="ik-sov-spark"></div></div>
+      </div>
+
+      <div class="grid g3">
+        <div class="card span2"><h3>Menciones por red social <span class="tag" id="intel-nets-total">—</span></h3>
+          <div id="intel-nets"></div>
+        </div>
+        <div class="card"><h3>Sentimiento del momento</h3>
+          <div class="gauge-wrap"><div id="intel-ring"></div>
+            <div><div class="num-lg" style="color:var(--green)" id="intel-net">+34</div>
+            <div class="notice">Índice neto pos-neg · 60 min.</div></div></div>
+          <div class="stat-inline" style="margin-top:14px">
+            <div class="si"><div class="v" style="color:var(--green)" id="intel-pos">—</div><div class="k">Positivas</div></div>
+            <div class="si"><div class="v" id="intel-neu">—</div><div class="k">Neutrales</div></div>
+            <div class="si"><div class="v" style="color:var(--red)" id="intel-neg">—</div><div class="k">Negativas</div></div>
+          </div></div>
+      </div>
+
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card span2"><h3>Flujo de menciones en vivo <span class="tag" id="intel-vol">—</span></h3>
+          <div class="mapwrap" style="height:200px">
+            <canvas id="intel-canvas"></canvas>
+            <div class="maplegend">
+              <span><i style="background:var(--green)"></i>Positiva</span>
+              <span><i style="background:var(--muted2)"></i>Neutral</span>
+              <span><i style="background:var(--red)"></i>Negativa</span>
+            </div>
+          </div></div>
+        <div class="card"><h3>Temas trending</h3><div class="blist" id="intel-topics"></div></div>
+      </div>
+
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card span2"><h3>Volumen de conversación · 24 h <span class="tag">interactivo</span></h3>
+          <div class="mapwrap" style="height:150px;background:transparent;border:none">
+            <canvas id="intel-bars"></canvas>
+            <div class="maptip" id="intel-bartip"></div>
+          </div>
+          <h3 style="margin-top:14px">Stream de menciones <span class="tag">en vivo</span></h3><div class="feed" id="intel-feed" style="max-height:170px"></div></div>
+        <div class="card"><h3>Share of Voice <span class="tag">vs adversarios</span></h3>
+          <div class="blist" id="intel-sov"></div>
+          <h3 style="margin-top:16px">Indicadores clave</h3>
+          <div class="stat-inline">
+            <div class="si"><div class="v" style="color:var(--amber)" id="intel-eng">—</div><div class="k">Engagement</div></div>
+            <div class="si"><div class="v" id="intel-infl">—</div><div class="k">Influencers</div></div>
+            <div class="si"><div class="v" style="color:var(--red)" id="intel-bots">—</div><div class="k">Bots filtrados</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DIGITAL ============ -->
+    <section class="view" data-view="digital">
+      <div class="vhead"><div><div class="eyebrow">S//02 · Contenido</div><h1>Estudio de contenido</h1></div>
+        <div class="meta">Motor<br><span style="color:var(--cyan)" id="digital-engine">IA generativa</span></div></div>
+      <div class="grid g2">
+        <div class="card"><h3>Generador de mensaje <span class="tag">IA</span></h3>
+          <div class="console">
+            <input id="gen-topic" placeholder="Tema o instrucción… ej: propuesta de agua para el oriente" value="propuesta de seguridad para colonias del oriente">
+            <select id="gen-format"><option value="tuit">Tuit</option><option value="post">Post FB</option><option value="discurso">Párrafo de discurso</option><option value="whatsapp">Mensaje WhatsApp</option></select>
+          </div>
+          <div class="console"><select id="gen-tone" style="flex:1"><option value="cercano y esperanzador">Tono: cercano y esperanzador</option><option value="firme y directo">Tono: firme y directo</option><option value="propositivo y técnico">Tono: propositivo y técnico</option></select>
+            <button class="btn" id="gen-btn" onclick="generate()">Generar</button></div>
+          <div class="output" id="gen-out"><span class="ph">El contenido generado aparecerá aquí. Define el tema, formato y tono, y presiona Generar.</span></div>
+          <div class="notice" id="gen-note">Modo demo: respuestas de muestra. Conecta el gateway de IA (proxy backend) para generar en vivo sin exponer llaves.</div>
+        </div>
+        <div class="card"><h3>Vista previa <span class="tag">tiempo real</span></h3>
+          <div class="preview">
+            <div class="ph-head"><div class="ava">JC</div><div class="who"><b>J. Candidato · Sonora</b><span id="prev-handle">@jc_sonora · ahora</span></div></div>
+            <div class="ph-body" id="prev-body"><span class="ph" style="color:var(--muted2)">La vista previa se actualiza al generar contenido.</span></div>
+            <div class="ph-foot"><span>♥ <span id="prev-likes">0</span></span><span>↺ <span id="prev-rt">0</span></span><span>💬 <span id="prev-rep">0</span></span></div>
+          </div>
+          <h3 style="margin-top:18px">Cola de publicación</h3><div class="blist" id="digital-queue"></div>
+          <h3 style="margin-top:18px">Rendimiento · 7 días</h3>
+          <div class="stat-inline"><div class="si"><div class="v" style="color:var(--amber)">8.4%</div><div class="k">Engagement</div></div>
+            <div class="si"><div class="v">312k</div><div class="k">Alcance</div></div>
+            <div class="si"><div class="v" style="color:var(--green)">+22%</div><div class="k">vs sem. previa</div></div></div></div>
+      </div>
+    </section>
+
+    <!-- ============ TIERRA ============ -->
+    <section class="view" data-view="tierra">
+      <div class="vhead"><div><div class="eyebrow">S//03 · Territorio</div><h1>Operación de tierra</h1></div>
+        <div class="meta">Cobertura del distrito<br><span style="color:var(--green)" id="tierra-cov">—%</span></div></div>
+      <div class="grid g4" style="margin-bottom:14px">
+        <div class="card kpi"><div class="lab">Brigadas activas</div><div class="num" id="t-brig">—</div><div class="delta up">en campo ahora</div></div>
+        <div class="card kpi"><div class="lab">Hogares visitados hoy</div><div class="num" id="t-homes">—</div><div class="delta up" id="t-homes-d">▲ 0</div></div>
+        <div class="card kpi"><div class="lab">Secciones cubiertas</div><div class="num" id="t-sec">—</div><div class="delta">de 142</div></div>
+        <div class="card kpi"><div class="lab">Incidencias</div><div class="num" id="t-inc" style="color:var(--amber)">—</div><div class="delta">por atender</div></div>
+      </div>
+      <div class="grid g3">
+        <div class="card span2" style="display:flex;flex-direction:column">
+          <h3>Mapa táctico — Hermosillo · brigadas en vivo <span class="tag" id="tierra-cov2">—%</span></h3>
+          <div class="mapwrap" style="flex:1;min-height:420px">
+            <canvas id="tierra-canvas"></canvas>
+            <div class="mapchips">
+              <span class="mapchip on" data-layer="brigadas">Brigadas</span>
+              <span class="mapchip on" data-layer="calor">Calor de visitas</span>
+              <span class="mapchip on" data-layer="rutas">Rutas</span>
+              <span class="mapchip" data-layer="incidencias">Incidencias</span>
+            </div>
+            <div class="maptip" id="tierra-tip"></div>
+            <div class="maplegend">
+              <span><i style="background:var(--green)"></i>Completada</span>
+              <span><i style="background:rgba(77,130,245,.6)"></i>En proceso</span>
+              <span><i style="background:var(--line2)"></i>Pendiente</span>
+            </div>
+            <div class="mapstat"><b id="tierra-map-cov">0%</b>hogares cubiertos</div>
+          </div>
+          <div class="notice">Cada punto ámbar es una brigada con su agente IA de ruteo. Pasa el cursor sobre una colonia para ver su avance. Usa las capas para encender/apagar.</div>
+        </div>
+        <div class="card"><h3>Brigadas en campo</h3><div class="blist" id="tierra-brig"></div>
+          <h3 style="margin-top:18px">Incidencias recientes</h3><div id="tierra-inc"></div></div>
+      </div>
+    </section>
+
+    <!-- ============ GOTV ============ -->
+    <section class="view" data-view="gotv">
+      <div class="vhead"><div><div class="eyebrow">S//04 · Movilización</div><h1>Get Out The Vote</h1></div>
+        <div class="meta">Meta de movilización<br><span style="color:var(--text)">52,000 votos</span></div></div>
+      <div class="grid g3">
+        <div class="card span2"><h3>Embudo de movilización</h3><div class="funnel" id="gotv-funnel"></div></div>
+        <div class="card"><h3>Avance de meta</h3><div style="display:flex;justify-content:center;margin:10px 0"><div id="gotv-ring"></div></div>
+          <div class="notice" style="text-align:center">Votantes comprometidos vs. meta del día D. Sube en vivo.</div></div>
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h3>Mapa de propensión por sección <span class="tag">100 secciones</span></h3>
+          <div class="heatgrid" id="gotv-heat"></div>
+          <div class="maplegend" style="position:static;margin-top:12px">
+            <span><i style="background:#1c2740"></i>Baja</span>
+            <span><i style="background:var(--cobalt)"></i>Media</span>
+            <span><i style="background:var(--green)"></i>Alta</span>
+            <span style="margin-left:auto;color:var(--muted2)" id="gotv-heat-tip">Pasa el cursor sobre una sección</span>
+          </div>
+        </div>
+        <div class="card"><h3>Plan día D · logística</h3><div class="blist" id="gotv-plan"></div></div>
+      </div>
+    </section>
+
+    <!-- ============ SHIELD ============ -->
+    <section class="view" data-view="shield">
+      <div class="vhead"><div><div class="eyebrow">S//05 · Riesgo y crisis</div><h1>Escudo</h1></div>
+        <div class="meta">Nivel de amenaza<br><span style="color:var(--amber)" id="shield-lvl">MODERADO</span></div></div>
+      <div class="grid g3">
+        <div class="card"><h3>Índice de riesgo</h3><div style="display:flex;justify-content:center;margin:6px 0"><div id="shield-ring"></div></div>
+          <div class="notice" style="text-align:center">Combina volumen adverso, velocidad de propagación y alcance.</div></div>
+        <div class="card span2" style="display:flex;flex-direction:column"><h3>Propagación de narrativas <span class="tag">red en vivo</span></h3>
+          <div class="mapwrap" style="flex:1;min-height:280px">
+            <canvas id="shield-canvas"></canvas>
+            <div class="maptip" id="shield-tip"></div>
+            <div class="maplegend">
+              <span><i style="background:var(--red)"></i>Adversa</span>
+              <span><i style="background:var(--amber)"></i>En monitoreo</span>
+              <span><i style="background:var(--green)"></i>Contenida</span>
+            </div>
+          </div></div>
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h3>Bitácora de crisis</h3><div id="shield-log"></div></div>
+        <div class="card"><h3>Respuesta sugerida <span class="tag">IA</span></h3>
+          <div class="output" id="shield-resp" style="min-height:90px"></div>
+          <div class="notice">Borrador defensivo basado en la narrativa de mayor riesgo. Requiere aprobación humana antes de publicar.</div></div>
+      </div>
+    </section>
+
+    <!-- ============ DEFENSA ============ -->
+    <section class="view" data-view="defensa">
+      <div class="vhead"><div><div class="eyebrow">S//06 · Defensa del voto</div><h1>Jornada electoral</h1></div>
+        <div class="meta">Casillas prioritarias<br><span style="color:var(--text)">418 en monitoreo</span></div></div>
+      <div class="grid g4" style="margin-bottom:14px">
+        <div class="card kpi"><div class="lab">Representantes asignados</div><div class="num" id="d-reps">—</div><div class="delta up">de 418</div></div>
+        <div class="card kpi"><div class="lab">Casillas cubiertas</div><div class="num" id="d-cov" style="color:var(--green)">—%</div><div class="delta up">en tiempo real</div></div>
+        <div class="card kpi"><div class="lab">Actas capturadas</div><div class="num" id="d-actas">—</div><div class="delta up" id="d-actas-d">▲ 0</div></div>
+        <div class="card kpi"><div class="lab">Incidencias reportadas</div><div class="num" id="d-inc" style="color:var(--amber)">—</div><div class="delta">en revisión</div></div>
+      </div>
+      <div class="grid g3">
+        <div class="card span2"><h3>Mapa de casillas — captura en vivo <span class="tag" id="d-prep">— % capturado</span></h3>
+          <div class="mapwrap" style="height:300px">
+            <canvas id="defensa-canvas"></canvas>
+            <div class="maptip" id="defensa-tip"></div>
+            <div class="maplegend">
+              <span><i style="background:var(--line2)"></i>Pendiente</span>
+              <span><i style="background:var(--cobalt)"></i>Instalada</span>
+              <span><i style="background:var(--green)"></i>Acta capturada</span>
+              <span><i style="background:var(--red)"></i>Incidencia</span>
+            </div>
+          </div>
+          <div class="notice">Cada celda es una casilla. Se enciende al instalarse y se marca en verde cuando su acta llega y es validada por el agente.</div>
+        </div>
+        <div class="card"><h3>Conteo rápido (PREP interno)</h3><div class="blist" id="defensa-count"></div>
+          <div class="notice">Tendencia con base en actas capturadas. No es resultado oficial.</div>
+          <h3 style="margin-top:16px">Incidencias por casilla</h3><div id="defensa-inc"></div></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3><span>Procesamiento de acta en cadena <span class="tag">IA · multiagente</span></span>
+          <button class="btn" style="padding:8px 16px" id="acta-btn" onclick="procesarActa()">▶ Procesar acta</button></h3>
+        <div class="flow" id="acta-flow"></div>
+        <div class="grid g2" style="margin-top:16px">
+          <div><h3 style="margin-bottom:8px">Resultado extraído del acta</h3>
+            <div class="acta" id="acta-result"><span class="ph" style="color:var(--muted2)">Presiona "Procesar acta" para ver al OCR, Validador, Detector de inconsistencias y PREP trabajar en cadena.</span></div></div>
+          <div><h3 style="margin-bottom:8px">Bitácora del flujo <span class="tag">en vivo</span></h3>
+            <div class="mlog" id="acta-log" style="max-height:200px"><span class="ph" style="color:var(--muted2);font-size:12px">Sin actividad.</span></div></div>
+        </div>
+        <div class="notice">Cada paso lo ejecuta un agente distinto de la suite Defensa. El acta capturada se suma al conteo rápido PREP en tiempo real.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ PANEL DE DETALLE DE AGENTE ============ -->
+<div class="modal" id="agent-modal">
+  <div class="modal-card">
+    <div class="modal-h">
+      <div class="mh-ic" id="am-ic"></div>
+      <div class="mh-bd"><h2 id="am-name">—</h2><div class="mh-sub" id="am-role">—</div><span class="mh-chip" id="am-chip">—</span></div>
+      <button class="modal-x" onclick="closeAgentPanel()">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="mmetrics" id="am-metrics"></div>
+      <h3>Tarea en curso <span style="float:right;color:var(--green)">● ejecutando</span></h3>
+      <div class="track" style="margin-bottom:6px;height:9px"><i id="am-prog" class="amber" style="width:0%"></i></div>
+      <div id="am-task" style="font-size:13px;color:var(--amber);margin-bottom:18px">—</div>
+      <h3>Bitácora de actividad <span class="tag" style="float:right;color:var(--amber)">en vivo</span></h3>
+      <div class="mlog" id="am-log"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" onclick="agentRunNow()">Ejecutar tarea ahora</button>
+      <button class="btn ghost" onclick="agentGoSuite()">Ir a la suite</button>
+      <button class="btn ghost" onclick="closeAgentPanel()" style="margin-left:auto">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================ CORE ============================ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[ri(0,a.length-1)];
+const fmtN=n=>Math.round(n).toLocaleString('es-MX');
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+let CURRENT='command';
+
+/* color tokens read once */
+const COL={amber:'#F2B33D',cobalt:'#4D82F5',cyan:'#4FD8E8',red:'#E5575C',green:'#46C28E',violet:'#A78BFA',muted:'#5B6883',line:'rgba(125,145,185,.18)'};
+
+/* count-up animation for any element */
+function animateNum(el,to,opt={}){
+  if(!el)return; const dur=opt.dur||900, dec=opt.dec||0, suf=opt.suf||'', pre=opt.pre||'';
+  const from=el._cur||0; el._cur=to; const t0=performance.now();
+  function f(t){const k=clamp((t-t0)/dur,0,1); const e=1-Math.pow(1-k,3);
+    const v=from+(to-from)*e; el.textContent=pre+(opt.thousand?fmtN(v):v.toFixed(dec))+suf;
+    if(k<1)requestAnimationFrame(f);}
+  requestAnimationFrame(f);
+}
+
+/* router */
+function route(v){
+  CURRENT=v;
+  $$('.navitem').forEach(n=>n.classList.toggle('on',n.dataset.v===v));
+  $$('.view').forEach(s=>s.classList.toggle('on',s.dataset.view===v));
+  $('#main').scrollTop=0;
+  RESIZE_ALL();
+}
+$$('.navitem').forEach(n=>n.addEventListener('click',()=>route(n.dataset.v)));
+
+/* clock + countdown (election fixed 47 days out, computed once) */
+const ELECTION=new Date(); ELECTION.setDate(ELECTION.getDate()+47);
+function tick(){
+  const d=new Date();
+  $('#clock').textContent=d.toLocaleTimeString('es-MX',{hour12:false});
+  const days=Math.max(0,Math.ceil((ELECTION-d)/86400000));
+  $('#countdown').textContent='D-'+String(days).padStart(2,'0');
+}
+setInterval(tick,1000); tick();
+
+/* sparkline */
+function spark(data,color,w=150,h=34){
+  const mn=Math.min(...data),mx=Math.max(...data),rg=(mx-mn)||1;
+  const pts=data.map((v,i)=>`${(i/(data.length-1)*w).toFixed(1)},${(h-((v-mn)/rg)*(h-6)-3).toFixed(1)}`).join(' ');
+  const last=pts.split(' ').pop().split(',');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="overflow:visible">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="${color}"/></svg>`;
+}
+/* ring gauge */
+function ring(pct,color,label){
+  const r=48,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<div class="ring"><svg width="120" height="120">
+    <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--line2)" stroke-width="9"/>
+    <circle cx="60" cy="60" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset 1.1s ease"/></svg>
+    <div class="ctr"><div class="v">${pct}%</div><div class="k">${label}</div></div></div>`;
+}
+
+/* ============================ CANVAS ENGINE ============================ */
+/* responsive canvas with DPR, registry of draw fns; only active view's canvases run */
+const CANVASES={};
+function makeCanvas(id,drawFn,initFn){
+  const cv=document.getElementById(id); if(!cv)return null;
+  const ctx=cv.getContext('2d');
+  const o={cv,ctx,w:0,h:0,dpr:1,draw:drawFn,data:{}};
+  o.resize=()=>{
+    const r=cv.getBoundingClientRect(); if(r.width===0)return;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    o.w=r.width;o.h=r.height;o.dpr=dpr;
+    cv.width=r.width*dpr;cv.height=r.height*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(o.onResize)o.onResize(o);
+  };
+  CANVASES[id]=o;
+  if(initFn)initFn(o);
+  o.resize();
+  return o;
+}
+function RESIZE_ALL(){requestAnimationFrame(()=>{for(const k in CANVASES)CANVASES[k].resize();});}
+window.addEventListener('resize',RESIZE_ALL);
+
+/* master loop */
+let _t=0;
+function masterLoop(ts){
+  _t=ts/1000;
+  for(const k in CANVASES){
+    const o=CANVASES[k];
+    const view=o.cv.closest('.view');
+    if(view && !view.classList.contains('on'))continue; // skip hidden
+    if(o.w===0){o.resize();continue;}
+    o.draw(o,_t);
+  }
+  requestAnimationFrame(masterLoop);
+}
+
+/* ---- geometry helpers ---- */
+function pointInPoly(x,y,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    if(((yi>y)!=(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+
+/* ===== GEOGRAFÍA REAL (lon/lat) ===== */
+/* Estado de Sonora (contorno simplificado y reconocible) */
+const GEO_SON={
+  name:'Sonora', meanLat:29.4,
+  poly:[
+    [-114.80,32.49],[-113.10,32.05],[-112.80,31.88],[-111.07,31.48],[-110.94,31.33],
+    [-109.55,31.34],[-109.05,31.33],[-108.80,30.70],[-108.45,30.00],[-108.55,29.30],
+    [-108.70,28.50],[-108.50,27.80],[-108.80,27.30],[-108.95,26.90],[-109.45,26.45],
+    [-109.95,26.80],[-110.50,27.30],[-110.90,27.90],[-111.30,28.30],[-111.90,28.85],
+    [-112.20,29.30],[-112.50,29.90],[-113.00,30.60],[-113.55,31.30],[-113.90,31.70],
+    [-114.40,31.90]
+  ],
+  /* ciudades más pobladas de Sonora (aprox. por población) */
+  places:[
+    {n:'Hermosillo',lon:-110.95,lat:29.07,cov:.85,hq:true},        // ~930 mil — capital
+    {n:'Cd. Obregón',lon:-109.93,lat:27.49,cov:.70},               // ~460 mil
+    {n:'Nogales',lon:-110.94,lat:31.28,cov:.60},                   // ~265 mil
+    {n:'San Luis R.C.',lon:-114.68,lat:32.40,cov:.55},             // ~200 mil
+    {n:'Navojoa',lon:-109.44,lat:27.07,cov:.48},                   // ~165 mil
+    {n:'Guaymas',lon:-110.85,lat:27.95,cov:.58},                   // ~150 mil
+    {n:'Agua Prieta',lon:-109.55,lat:31.30,cov:.45},               // ~90 mil
+    {n:'Caborca',lon:-112.16,lat:30.72,cov:.40},                   // ~85 mil
+    {n:'Puerto Peñasco',lon:-113.45,lat:31.28,cov:.35},            // ~62 mil
+    {n:'Magdalena',lon:-110.96,lat:30.63,cov:.42}                  // ~30 mil
+  ],
+  seaLabels:[
+    {t:'ESTADOS UNIDOS (ARIZONA)',lon:-111.6,lat:32.30,c:'rgba(140,151,175,.5)'},
+    {t:'GOLFO DE\nCALIFORNIA',lon:-112.9,lat:28.7,c:'rgba(79,216,232,.35)'},
+    {t:'CHIHUAHUA',lon:-108.55,lat:29.10,c:'rgba(140,151,175,.4)',rot:90},
+    {t:'SINALOA',lon:-108.95,lat:26.65,c:'rgba(140,151,175,.4)'}
+  ]
+};
+/* Ciudad de Hermosillo (contorno aproximado + colonias) */
+const GEO_HMO={
+  name:'Hermosillo', meanLat:29.07,
+  poly:[
+    [-111.030,29.130],[-110.980,29.142],[-110.930,29.138],[-110.895,29.112],[-110.882,29.075],
+    [-110.895,29.035],[-110.930,29.008],[-110.975,29.005],[-111.018,29.030],[-111.042,29.078]
+  ],
+  places:[
+    {n:'Centro',lon:-110.955,lat:29.075,cov:.88},
+    {n:'Pitic',lon:-110.968,lat:29.098,cov:.80},
+    {n:'Modelo',lon:-110.990,lat:29.090,cov:.66},
+    {n:'San Benito',lon:-110.932,lat:29.092,cov:.60},
+    {n:'Las Quintas',lon:-110.928,lat:29.112,cov:.58},
+    {n:'Villa de Seris',lon:-110.952,lat:29.040,cov:.50},
+    {n:'Olivares',lon:-110.988,lat:29.058,cov:.45},
+    {n:'Y Griega',lon:-110.912,lat:29.062,cov:.34}
+  ],
+  seaLabels:[
+    {t:'RÍO SONORA',lon:-110.905,lat:29.050,c:'rgba(79,216,232,.30)',rot:-65}
+  ]
+};
+/* proyección lon/lat → pixeles preservando proporción y centrada */
+function projectGeo(geo,w,h,pad){
+  const k=Math.cos(geo.meanLat*Math.PI/180)*111; // km por grado lon
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  geo.poly.forEach(([lon,lat])=>{const x=lon*k,y=lat*111;
+    minx=Math.min(minx,x);maxx=Math.max(maxx,x);miny=Math.min(miny,y);maxy=Math.max(maxy,y);});
+  const gw=maxx-minx,gh=maxy-miny;
+  const s=Math.min((w-pad*2)/gw,(h-pad*2)/gh);
+  const ox=(w-gw*s)/2, oy=(h-gh*s)/2;
+  const proj=(lon,lat)=>[ox+(lon*k-minx)*s, oy+(maxy-lat*111)*s];
+  return {proj,bbox:[ox,oy,ox+gw*s,oy+gh*s]};
+}
+
+/* build a geo map object: heat grid + brigades + signals */
+function buildDistrict(o,opt={}){
+  const geo=opt.geo||GEO_SON; o.data.geo=geo;
+  o.onResize=(c)=>{
+    const P=projectGeo(geo,c.w,c.h,18); c.data.proj=P; c.data.bbox=P.bbox;
+    c.data.poly=geo.poly.map(([lon,lat])=>P.proj(lon,lat));
+    c.data.col=geo.places.map(pl=>{const [px,py]=P.proj(pl.lon,pl.lat);return {...pl,n:pl.n,px,py,cov:pl.cov};});
+    c.data.labels=(geo.seaLabels||[]).map(l=>{const [px,py]=P.proj(l.lon,l.lat);return {...l,px,py};});
+    // heat grid
+    const cell=Math.max(14,c.w/26);
+    c.data.cell=cell;
+    const cols=Math.ceil(c.w/cell),rows=Math.ceil(c.h/cell);
+    c.data.cols=cols;c.data.rows=rows;
+    if(!c.data.heat||c.data.heat.length!==cols*rows){
+      c.data.heat=new Float32Array(cols*rows);
+      c.data.inside=new Uint8Array(cols*rows);
+      for(let gy=0;gy<rows;gy++)for(let gx=0;gx<cols;gx++){
+        const cx=(gx+.5)*cell,cy=(gy+.5)*cell;
+        c.data.inside[gy*cols+gx]=pointInPoly(cx,cy,c.data.poly)?1:0;
+      }
+      // seed coverage near established colonias
+      for(let gy=0;gy<rows;gy++)for(let gx=0;gx<cols;gx++){
+        const idx=gy*cols+gx; if(!c.data.inside[idx])continue;
+        const cx=(gx+.5)*cell,cy=(gy+.5)*cell; let best=0;
+        for(const cc of c.data.col){const d=Math.hypot(cx-cc.px,cy-cc.py)/c.w; best=Math.max(best,cc.cov*Math.max(0,1-d*3.2));}
+        c.data.heat[idx]=best*rnd(.4,.8);
+      }
+    }
+    // brigades
+    const N=opt.brigades||10;
+    if(!c.data.brig){
+      c.data.brig=[];
+      for(let i=0;i<N;i++){
+        const start=randInside(c);
+        c.data.brig.push({x:start.x,y:start.y,tx:start.x,ty:start.y,trail:[],id:'B'+(i+1),name:pick(geo.places).n,homes:ri(40,180),speed:rnd(18,34)});
+      }
+    }
+  };
+  o.data.signals=[];
+}
+function randInside(c){
+  const bb=c.data.bbox||[0,0,c.w,c.h];
+  for(let k=0;k<60;k++){const x=rnd(bb[0],bb[2]),y=rnd(bb[1],bb[3]); if(pointInPoly(x,y,c.data.poly))return{x,y};}
+  return{x:(bb[0]+bb[2])/2,y:(bb[1]+bb[3])/2};
+}
+function gridIdxAt(c,x,y){const gx=Math.floor(x/c.data.cell),gy=Math.floor(y/c.data.cell); if(gx<0||gy<0||gx>=c.data.cols||gy>=c.data.rows)return -1; return gy*c.data.cols+gx;}
+
+/* layers state per map id */
+const LAYERS={};
+$$('.mapchip').forEach(ch=>{
+  ch.addEventListener('click',()=>{
+    ch.classList.toggle('on');
+    const wrap=ch.closest('.mapwrap'); const cv=wrap.querySelector('canvas');
+    LAYERS[cv.id]=LAYERS[cv.id]||{};
+    LAYERS[cv.id][ch.dataset.layer]=ch.classList.contains('on');
+  });
+});
+function layerOn(id,name){const l=LAYERS[id]; return !l||l[name]!==false;}
+
+/* shared district draw */
+function drawDistrict(c,t,dt){
+  const ctx=c.ctx; ctx.clearRect(0,0,c.w,c.h);
+  const D=c.data; if(!D.poly)return;
+  // clip to district
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(D.poly[0][0],D.poly[0][1]);
+  for(let i=1;i<D.poly.length;i++)ctx.lineTo(D.poly[i][0],D.poly[i][1]);
+  ctx.closePath();
+  ctx.fillStyle='rgba(77,130,245,.04)';ctx.fill();
+  ctx.clip();
+
+  // grid texture
+  ctx.strokeStyle='rgba(125,145,185,.06)';ctx.lineWidth=1;
+  for(let x=0;x<c.w;x+=D.cell){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.h);ctx.stroke();}
+  for(let y=0;y<c.h;y+=D.cell){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.w,y);ctx.stroke();}
+
+  // heat cells
+  if(layerOn(c.cv.id,'calor')){
+    for(let gy=0;gy<D.rows;gy++)for(let gx=0;gx<D.cols;gx++){
+      const idx=gy*D.cols+gx; if(!D.inside[idx])continue;
+      const h=D.heat[idx]; if(h<=0.02)continue;
+      if(h>.72){ctx.fillStyle=`rgba(70,194,142,${.18+h*.5})`;}
+      else{ctx.fillStyle=`rgba(77,130,245,${.10+h*.45})`;}
+      ctx.fillRect(gx*D.cell+1,gy*D.cell+1,D.cell-2,D.cell-2);
+    }
+  }
+  ctx.restore();
+
+  // district border
+  ctx.beginPath();ctx.moveTo(D.poly[0][0],D.poly[0][1]);
+  for(let i=1;i<D.poly.length;i++)ctx.lineTo(D.poly[i][0],D.poly[i][1]);
+  ctx.closePath();
+  ctx.strokeStyle='rgba(79,216,232,.5)';ctx.lineWidth=1.6;ctx.stroke();
+
+  // sea / border labels
+  if(D.labels){
+    ctx.textAlign='center';ctx.font='600 9px JetBrains Mono, monospace';
+    for(const l of D.labels){
+      ctx.save();ctx.translate(l.px,l.py);if(l.rot)ctx.rotate(l.rot*Math.PI/180);
+      ctx.fillStyle=l.c||'rgba(140,151,175,.5)';
+      l.t.split('\n').forEach((ln,i)=>ctx.fillText(ln,0,i*11));
+      ctx.restore();
+    }
+  }
+
+  // place labels + HQ marker
+  ctx.font='600 10px JetBrains Mono, monospace';ctx.textAlign='center';
+  for(const cc of D.col){
+    if(cc.hq){
+      const pl=Math.sin(t*2.4)*.5+.5;
+      ctx.beginPath();ctx.arc(cc.px,cc.py,8+pl*7,0,7);ctx.fillStyle='rgba(242,179,61,.14)';ctx.fill();
+      ctx.save();ctx.translate(cc.px,cc.py);ctx.rotate(Math.PI/4);
+      ctx.fillStyle=COL.amber;ctx.fillRect(-4,-4,8,8);
+      ctx.strokeStyle='rgba(10,14,24,.9)';ctx.lineWidth=1.4;ctx.strokeRect(-4,-4,8,8);ctx.restore();
+      ctx.fillStyle=COL.amber;ctx.font='700 11px JetBrains Mono, monospace';
+      ctx.fillText(cc.n+' ◆ HQ',cc.px,cc.py-12);
+      ctx.font='600 10px JetBrains Mono, monospace';
+    }else{
+      ctx.fillStyle='rgba(234,238,247,.6)';
+      ctx.beginPath();ctx.arc(cc.px,cc.py,2.8,0,7);ctx.fill();
+      ctx.fillStyle='rgba(140,151,175,.9)';
+      ctx.fillText(cc.n,cc.px,cc.py-7);
+    }
+  }
+
+  // brigades move
+  if(layerOn(c.cv.id,'brigadas')){
+    for(const b of D.brig){
+      const dx=b.tx-b.x,dy=b.ty-b.y,dist=Math.hypot(dx,dy);
+      if(dist<4){const p=randInside(c);b.tx=p.x;b.ty=p.y;b.name=nearestColonia(D,b.x,b.y);b.homes+=ri(1,6);}
+      else{const step=b.speed*(dt||0.016);b.x+=dx/dist*step;b.y+=dy/dist*step;}
+      // mark heat
+      const idx=gridIdxAt(c,b.x,b.y); if(idx>=0&&D.inside[idx])D.heat[idx]=Math.min(1,D.heat[idx]+0.9*(dt||.016));
+      // trail
+      if(layerOn(c.cv.id,'rutas')){
+        b.trail.push([b.x,b.y]); if(b.trail.length>34)b.trail.shift();
+        ctx.beginPath();
+        for(let i=0;i<b.trail.length;i++){const p=b.trail[i];i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);}
+        ctx.strokeStyle='rgba(242,179,61,.28)';ctx.lineWidth=1.4;ctx.stroke();
+      }
+      // pulse
+      const pl=(Math.sin(t*3+b.x)*.5+.5);
+      ctx.beginPath();ctx.arc(b.x,b.y,5+pl*5,0,7);ctx.fillStyle='rgba(242,179,61,.14)';ctx.fill();
+      ctx.beginPath();ctx.arc(b.x,b.y,3.4,0,7);ctx.fillStyle=COL.amber;ctx.fill();
+      ctx.strokeStyle='rgba(10,14,24,.9)';ctx.lineWidth=1;ctx.stroke();
+    }
+  }
+
+  // incidents (tierra)
+  if(D.incidents&&layerOn(c.cv.id,'incidencias')){
+    for(const inc of D.incidents){
+      const pl=(Math.sin(t*4+inc.x)*.5+.5);
+      ctx.beginPath();ctx.arc(inc.x,inc.y,4+pl*6,0,7);ctx.strokeStyle='rgba(229,87,92,.7)';ctx.lineWidth=1.4;ctx.stroke();
+      ctx.beginPath();ctx.arc(inc.x,inc.y,2.6,0,7);ctx.fillStyle=COL.red;ctx.fill();
+    }
+  }
+
+  // signals (command)
+  if(D.signals&&layerOn(c.cv.id,'senales')){
+    for(let i=D.signals.length-1;i>=0;i--){
+      const s=D.signals[i];s.r+=40*(dt||.016);s.life-=dt||.016;
+      if(s.life<=0){D.signals.splice(i,1);continue;}
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);
+      ctx.strokeStyle=`rgba(${s.col},${clamp(s.life,0,.6)})`;ctx.lineWidth=1.4;ctx.stroke();
+      ctx.beginPath();ctx.arc(s.x,s.y,2.2,0,7);ctx.fillStyle=`rgb(${s.col})`;ctx.fill();
+    }
+  }
+
+  // coverage stat
+  let tot=0,cov=0; for(let i=0;i<D.heat.length;i++){if(D.inside[i]){tot++;if(D.heat[i]>.5)cov++;}}
+  D.coverage=tot?cov/tot*100:0;
+}
+function nearestColonia(D,x,y){let best=D.col[0],bd=1e9;for(const c of D.col){const d=Math.hypot(c.px-x,c.py-y);if(d<bd){bd=d;best=c;}}return best.n;}
+
+/* hover tooltip for district maps */
+function attachMapTip(id,tipId,fn){
+  const o=CANVASES[id]; if(!o)return; const tip=document.getElementById(tipId);
+  o.cv.addEventListener('mousemove',e=>{
+    const r=o.cv.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
+    const html=fn(o,x,y);
+    if(html){tip.innerHTML=html;tip.style.left=x+'px';tip.style.top=y+'px';tip.classList.add('on');}
+    else tip.classList.remove('on');
+  });
+  o.cv.addEventListener('mouseleave',()=>tip.classList.remove('on'));
+  o.cv.addEventListener('click',e=>{
+    const r=o.cv.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
+    if(o.data.signals)o.data.signals.push({x,y,r:0,life:.8,col:'79,216,232'});
+  });
+}
+
+/* ============================ 89 AGENTES ============================ */
+const SUITE_META={
+  command:{label:'Command',color:COL.cyan},intel:{label:'Intel',color:COL.cobalt},
+  digital:{label:'Digital',color:COL.violet},tierra:{label:'Tierra',color:COL.amber},
+  gotv:{label:'GOTV',color:COL.green},shield:{label:'Shield',color:COL.red},
+  defensa:{label:'Defensa',color:'#E89A4F'}
+};
+const AGENTS={
+  command:[
+    {n:'Orquestador Maestro',r:'Coordina las 6 suites y prioriza la cola global',t:['Reasignando prioridad a Shield por alerta alta','Balanceando carga entre Tierra y GOTV','Consolidando órdenes del comité']},
+    {n:'Analista de Intención de Voto',r:'Modela la tendencia de intención de voto',t:['Recalculando IV con menciones de la última hora','Ajustando margen de error a ±2.1 pts','Comparando IV contra el corte de ayer']},
+    {n:'Sintetizador de Panorama',r:'Genera el resumen ejecutivo cada hora',t:['Redactando el brief de las 12:00','Resumiendo 1,240 señales en 5 puntos','Marcando 3 temas para el candidato']},
+    {n:'Detector de Anomalías',r:'Alerta cambios bruscos en los KPIs',t:['Vigilando la varianza del sentimiento','Detectó +18% de menciones en 20 min','Sin anomalías en alcance']},
+    {n:'Priorizador de Alertas',r:'Rankea alertas por impacto y urgencia',t:['Subiendo "seguridad oriente" a prioridad alta','Degradando 2 alertas ya resueltas','Reordenando 4 alertas activas']},
+    {n:'Asignador de Recursos',r:'Reasigna brigadas y presupuesto',t:['Moviendo 2 brigadas al oriente','Sugiriendo +pauta en TikTok','Liberando recursos de zona cubierta']},
+    {n:'Pronóstico Electoral',r:'Proyección de resultado con modelos',t:['Corriendo 5,000 simulaciones Monte Carlo','Proyección: 43.1% ±2','Integrando propensión por sección']},
+    {n:'Monitor de KPIs',r:'Vigila las métricas en tiempo real',t:['Refrescando 4 KPIs cada 2.6 s','Alcance hoy en máximo semanal','Votantes id. +120 en 5 min']},
+    {n:'Coordinador Inter-suites',r:'Enruta hallazgos entre áreas',t:['Pasando tema viral de Intel a Digital','Notificando incidencia de Tierra','Enlazando narrativa con Shield']},
+    {n:'Gestor de Agenda',r:'Optimiza giras y eventos del candidato',t:['Proponiendo evento en col. Oriente','Evitando empalme con horario escolar','Reajustando ruta por tráfico']},
+    {n:'Analista de Competencia',r:'Compara contra los adversarios',t:['Rastreando spot del adversario A','Midiendo share of voice','Detectó cambio de mensaje rival']},
+    {n:'Reportero Ejecutivo',r:'Informes para el comité de campaña',t:['Generando el reporte diario','Adjuntando gráficas de tendencia','Programando corte de las 20:00']},
+    {n:'Gestor de Riesgo Global',r:'Consolida el índice de riesgo',t:['Índice en 41 (moderado)','Sumando señal adversa de Shield','Recalculando velocidad de propagación']},
+    {n:'Bitácora y Auditoría',r:'Registra decisiones y trazabilidad',t:['Sellando 38 acciones de la hora','Guardando aprobación humana','Exportando log de auditoría']}
+  ],
+  intel:[
+    {n:'Escucha · X / Twitter',r:'Rastrea menciones y hilos en X',t:['Capturando 312 menciones/min','Siguiendo #SonoraAvanza','Detectó hilo viral sobre baches']},
+    {n:'Escucha · Facebook',r:'Monitorea grupos y páginas locales',t:['Leyendo 14 grupos de colonias','Comentario crítico en Villa de Seris','Resumiendo reacciones del día']},
+    {n:'Escucha · Instagram',r:'Vigila stories, reels y comentarios',t:['Analizando comentarios del reel','Apoyo de colectivo juvenil','Midiendo guardados del post']},
+    {n:'Escucha · TikTok',r:'Rastrea video y audios en tendencia',t:['Detectó audio en tendencia local','Recorrido con 28k reproducciones','Clasificando duetos y stitches']},
+    {n:'Monitor de Prensa',r:'Lee medios y portales locales',t:['Escaneando 9 portales locales','La Voz cita al candidato','Marcando 2 notas para réplica']},
+    {n:'Transcriptor de Audio',r:'Pasa radio y podcast a texto',t:['Transcribiendo entrevista de radio','Indexando podcast regional','Extrayendo citas clave']},
+    {n:'Análisis de Sentimiento',r:'Clasifica cada mención pos/neu/neg',t:['Clasificando 1,240 menciones','Sentimiento neto en +34','Re-evaluando ironía y sarcasmo']},
+    {n:'Modelado de Temas',r:'Agrupa la conversación por tema',t:['Detectando 6 clústeres de tema','"Agua" lidera con 92 pts','Separando "seguridad" de "alumbrado"']},
+    {n:'Detector de Tendencias',r:'Identifica temas emergentes',t:['Tendencia emergente: transporte','Pico de menciones tras el evento','Vigilando aceleración de hashtags']},
+    {n:'Identificador de Influencers',r:'Mapea voces que mueven opinión',t:['Rankeando 40 cuentas locales','Líder vecinal con alto alcance','Sugiriendo aliados potenciales']},
+    {n:'Detector de Bots',r:'Aísla cuentas falsas y coordinadas',t:['Filtrando 230 cuentas sospechosas','Red coordinada detectada','Limpiando métricas ininfladas']},
+    {n:'Geo-clasificador',r:'Etiqueta menciones por colonia/sección',t:['Geo-tag de 480 menciones','Concentración en zona oriente','Cruzando con secciones electorales']},
+    {n:'Resumidor de Menciones',r:'Condensa el stream para el equipo',t:['Resumiendo el stream de la hora','5 insights accionables','Destacando quejas recurrentes']},
+    {n:'Analista del Adversario',r:'Sigue la conversación rival',t:['Monitoreando share of voice rival','Adversario lanza spot comparativo','Detectando su tema del día']},
+    {n:'Detector de Desinformación',r:'Marca rumores y datos falsos',t:['Rumor sobre obra inconclusa','Verificando cadena de WhatsApp','Escalando caso a Shield']},
+    {n:'Sondeo de Comentarios',r:'Mini-encuesta a partir de comentarios',t:['Midiendo apoyo en 800 comentarios','Tema empleo: 64% favorable','Detectando dudas frecuentes']}
+  ],
+  digital:[
+    {n:'Redactor de Tuits',r:'Escribe tuits por tema y tono',t:['Borrador de tuit sobre seguridad','Probando 3 ganchos','Ajustando a 280 caracteres']},
+    {n:'Redactor de Posts',r:'Posts largos para FB/IG',t:['Post de propuesta de empleo','Estructurando 3 compromisos','Añadiendo llamado a la acción']},
+    {n:'Guionista de Reels',r:'Guiones de video corto',t:['Guion del recorrido en oriente','Escaleta de 30 segundos','Sugiriendo cortes y subtítulos']},
+    {n:'Redactor de Discursos',r:'Párrafos y mensajes para eventos',t:['Cierre para mitin del sábado','Adaptando tono cercano','Insertando datos de la colonia']},
+    {n:'Redactor WhatsApp/SMS',r:'Mensajes 1:1 y difusión',t:['Plantilla de seguridad oriente','Variante con opción de respuesta','Personalizando por colonia']},
+    {n:'Director de Arte',r:'Prompts y briefs visuales',t:['Brief de tarjeta de propuesta','Definiendo paleta de campaña','Generando 3 conceptos visuales']},
+    {n:'Editor de Tono y Estilo',r:'Pule estilo y consistencia',t:['Unificando voz de campaña','Suavizando 2 frases','Revisando ortografía y claridad']},
+    {n:'Verificador de Cumplimiento',r:'Revisa reglas INE y legalidad',t:['Validando que no haya calumnia','Revisando uso de colores oficiales','Marcando frase de riesgo legal']},
+    {n:'Programador de Publicaciones',r:'Calendariza y publica',t:['Agendando spot de cierre','Optimizando horario por alcance','Cola: 4 piezas pendientes']},
+    {n:'Optimizador A/B',r:'Prueba variantes de creativo',t:['Comparando 2 titulares','Variante B gana +14% CTR','Asignando ganador a la cola']},
+    {n:'Community Manager',r:'Responde comentarios y DMs',t:['Respondiendo 32 comentarios','Derivando duda a Tierra','Agradeciendo apoyos del reel']},
+    {n:'Analista de Rendimiento',r:'Mide engagement y alcance',t:['Engagement de la semana: 8.4%','Alcance 312k (+22%)','Detectando pieza top del mes']}
+  ],
+  tierra:[
+    {n:'Optimizador de Rutas',r:'Calcula la ruta óptima de cada brigada',t:['Recalculando ruta de Brigada 9','Evitando bloqueo en oriente','Minimizando tiempos de traslado']},
+    {n:'Asignador de Brigadas',r:'Distribuye brigadas por sección',t:['Asignando 2 brigadas a oriente','Equilibrando carga por colonia','Cubriendo secciones rezagadas']},
+    {n:'Procesador de Reportes',r:'Lee fotos y notas de campo',t:['Procesando 84 reportes de hoy','Extrayendo quejas por colonia','Validando evidencia fotográfica']},
+    {n:'Actualizador de Cobertura',r:'Mantiene el mapa de calor al día',t:['Pintando avance en tiempo real','Cobertura del distrito 68%','Marcando manzanas completadas']},
+    {n:'Gestor de Incidencias',r:'Atiende incidencias de campo',t:['Bloqueo vecinal en oriente','Desviando ruta de Brigada 9','7 incidencias por atender']},
+    {n:'CRM Territorial',r:'Registra hogares visitados',t:['Guardando 2,840 hogares hoy','Deduplicando contactos','Marcando seguimientos pendientes']},
+    {n:'Identificador de Líderes',r:'Detecta líderes de colonia',t:['3 líderes nuevos en Las Quintas','Calificando influencia local','Sugiriendo casa de enlace']},
+    {n:'Programador de Recorridos',r:'Planea recorridos del candidato',t:['Proponiendo recorrido sabatino','Cruzando con zonas rezagadas','Coordinando con seguridad']},
+    {n:'Inventario de Material',r:'Controla folletos y utilería',t:['Reabasteciendo Villa de Seris','Stock bajo de lonas','Asignando kits a 5 brigadas']},
+    {n:'Verificador de Visitas',r:'Anti-fraude de brigadistas (geo+hora)',t:['Validando GPS de 18 brigadas','Cruce hora vs ubicación OK','Marcando 1 reporte dudoso']},
+    {n:'Encuestador Puerta a Puerta',r:'Captura sondeo en campo',t:['Capturando 120 encuestas','Tema agua prioritario','Sincronizando con Intel']},
+    {n:'Geo-segmentador',r:'Prioriza manzanas por valor',t:['Priorizando secciones competidas','Calculando voto por esfuerzo','Sugiriendo foco en oriente']},
+    {n:'Coordinador de Mítines',r:'Logística de eventos locales',t:['Reservando plaza en Hidalgo','Estimando asistencia: 600','Coordinando sonido y sillas']}
+  ],
+  gotv:[
+    {n:'Modelo de Propensión',r:'Calcula propensión de voto por persona',t:['Recalculando 72,000 perfiles','Sección 0412 al 91%','Actualizando con contactos nuevos']},
+    {n:'Identificador de Persuadibles',r:'Aísla votantes blandos',t:['Detectando 8,400 persuadibles','Priorizando por cercanía a casilla','Cruzando con temas sensibles']},
+    {n:'Gestor de Compromisos',r:'Lleva el registro de comprometidos',t:['29,500 comprometidos (57%)','Confirmando promesas de voto','Detectando bajas de compromiso']},
+    {n:'Planificador de Transporte',r:'Organiza traslados del día D',t:['Asignando 40 rutas de traslado','Emparejando vehículos y zonas','Estimando capacidad por turno']},
+    {n:'Recordatorios Automatizados',r:'Envía WhatsApp/llamadas GOTV',t:['Programando recordatorio día D','Enviando 12k mensajes','Reintentando no contactados']},
+    {n:'Optimizador de Embudo',r:'Mejora cada etapa de movilización',t:['Subiendo tasa de contacto','Reduciendo fuga en "comprometidos"','Sugiriendo guion más corto']},
+    {n:'Asignador de Voluntarios',r:'Coloca voluntarios donde rinden más',t:['Confirmando 78% de voluntarios','Reubicando a zonas frías','Cubriendo turnos del día D']},
+    {n:'Analista de Abstención',r:'Estudia abstención histórica',t:['Modelando abstención por sección','Oriente con riesgo alto','Cruzando clima y horario']},
+    {n:'Microtargeting GOTV',r:'Mensaje a la medida por segmento',t:['Generando 6 variantes de mensaje','Segmentando por edad y tema','Asignando mensaje a sección']},
+    {n:'Coordinador de Casas de Enlace',r:'Gestiona casas de apoyo',t:['85% de casas listas','Asignando responsables','Mapeando cobertura por colonia']},
+    {n:'Predictor de Participación',r:'Estima el turnout del día D',t:['Proyectando 61% de participación','Ajustando por hora','Alertando secciones de bajo turnout']}
+  ],
+  shield:[
+    {n:'Detector de Narrativas Adversas',r:'Identifica ataques y narrativas',t:['Rastreando 4 narrativas activas','Ataque en cuenta anónima','Clasificando por intención']},
+    {n:'Medidor de Propagación',r:'Mide velocidad y alcance de la crisis',t:['+340% de menciones en 30 min','Estimando alcance en 12k','Trazando curva de difusión']},
+    {n:'Verificador de Hechos',r:'Contrasta afirmaciones con datos',t:['Verificando avance de la obra','Reuniendo evidencia y fechas','Marcando dato como falso']},
+    {n:'Generador de Respuestas',r:'Redacta réplicas defensivas',t:['Borrador de desmentido listo','Tono firme y verificable','Esperando aprobación humana']},
+    {n:'Rastreador de Redes',r:'Detecta amplificación coordinada',t:['Mapeando 30 cuentas amplificadoras','Identificando cuenta semilla','Estimando si es orgánico o no']},
+    {n:'Scoring de Riesgo',r:'Calcula el índice de riesgo',t:['Índice de riesgo en 41','Nivel: moderado','Recalculando con nuevo alcance']},
+    {n:'Alerta Temprana',r:'Avisa crisis antes de que escale',t:['Vigilando 9 señales débiles','Pre-alerta sobre tema baches','Listo para escalar a Command']},
+    {n:'Gestor de Desmentidos',r:'Coordina réplica y reportes',t:['Publicando respuesta oficial','Reportando cuenta a la plataforma','Midiendo efecto del desmentido']},
+    {n:'Simulador de Crisis',r:'Modela escenarios de impacto',t:['Simulando 3 escenarios','Estimando daño a la intención','Recomendando contención mínima']}
+  ],
+  defensa:[
+    {n:'Asignador de Representantes',r:'Coloca representantes por casilla',t:['402/418 casillas con representante','Cubriendo 16 casillas faltantes','Reasignando por ausencias']},
+    {n:'OCR de Actas',r:'Lee y digitaliza actas',t:['Capturando acta 0231','Leyendo cifras manuscritas','Encolando actas para validar']},
+    {n:'Validador Aritmético',r:'Cruza sumas y totales del acta',t:['Verificando suma de 184 actas','Cuadre aritmético OK','Marcando acta con descuadre']},
+    {n:'Conteo Rápido PREP',r:'Tendencia con actas capturadas',t:['Actualizando tendencia interna','42.6% con 38% capturado','Recalculando margen']},
+    {n:'Detector de Inconsistencias',r:'Detecta anomalías en resultados',t:['Comparando contra histórico','Outlier en casilla 0477','Alertando posible error']},
+    {n:'Gestor de Incidencias',r:'Atiende incidencias de casilla',t:['Falta funcionario en 0477-C1','Propaganda cercana retirada','5 incidencias en revisión']},
+    {n:'Monitor de Instalación',r:'Sigue la apertura de casillas',t:['96% de casillas instaladas','0412-B con retraso de 20 min','Confirmando aperturas en vivo']},
+    {n:'Geolocalizador',r:'Ubica a cada representante',t:['Rastreando 402 representantes','3 fuera de su casilla','Confirmando presencia por GPS']},
+    {n:'Predictor con Actas Parciales',r:'Proyecta resultado con lo capturado',t:['Proyección preliminar: ventaja','Intervalo de confianza 95%','Refinando con cada acta']},
+    {n:'Chatbot de Representantes',r:'Asiste a representantes por chat',t:['Resolviendo 22 dudas','Guía de llenado de incidencia','Recibiendo fotos de acta']},
+    {n:'Verificador de Identidad',r:'Valida credenciales de representantes',t:['Validando 12 acreditaciones','Cruce con padrón de reps','Marcando 1 pendiente']},
+    {n:'Alerta de Casillas sin Cubrir',r:'Detecta huecos de cobertura',t:['16 casillas sin representante','Priorizando por competitividad','Solicitando refuerzos']},
+    {n:'Registro de Participación',r:'Sigue la afluencia por hora',t:['Afluencia 11:00: media-alta','Comparando vs 2021','Alertando baja en oriente']},
+    {n:'Gestor de Impugnaciones',r:'Arma expedientes legales',t:['Documentando incidencia 0477','Reuniendo evidencia','Preparando escrito de queja']}
+  ]
+};
+/* lista plana de los 89 en orden de suites */
+const SUITE_ORDER=['command','intel','digital','tierra','gotv','shield','defensa'];
+const SUITE_PREFIX={command:'CMD',intel:'INT',digital:'DIG',tierra:'TRR',gotv:'GTV',shield:'SHD',defensa:'DEF'};
+const ALL89=[];
+SUITE_ORDER.forEach(s=>AGENTS[s].forEach((a,i)=>ALL89.push({...a,suite:s,id:SUITE_PREFIX[s]+'-'+String(i+1).padStart(2,'0'),_status:'act',_task:a.t[0]})));
+
+/* ===================== COMMAND ===================== */
+const SIGNALS=[
+  ['Mencionan propuesta de agua en Twitter/X','X · Hermosillo Centro','pos'],
+  ['Comentario crítico sobre seguridad en grupo de FB','Facebook · Villa de Seris','neg'],
+  ['Nota de medio local cita al candidato','Prensa · El Imparcial','pos'],
+  ['Hilo viral sobre baches en col. Las Quintas','X · Zona Oriente','neg'],
+  ['Reacciones positivas a video de recorrido','TikTok · Pitic','pos'],
+  ['Pregunta ciudadana sobre programa de empleo','WhatsApp · Brigada 7','neu'],
+  ['Mención neutral en podcast regional','Audio · Sonora Podcast','neu'],
+  ['Adversario lanza spot comparativo','TV/Redes · monitoreo','neg'],
+  ['Apoyo de colectivo juvenil en publicación','Instagram · Unison','pos'],
+  ['Tendencia local #SonoraAvanza sube','X · agregado','neu'],
+  ['Reporte de brigada: buena recepción en colonia','Tierra · Brigada 3','pos'],
+  ['Desmentido de rumor sobre obra pública','Shield · respuesta','pos']
+];
+const TOPICS=[['Agua',1],['Seguridad',1],['Empleo',0],['Baches',1],['Salud',0],['Transporte',0],['Energía',1],['Juventud',0]];
+const ALERTS=[
+  ['hi','Narrativa adversa en aumento sobre tema seguridad','Shield · prioridad alta · respuesta sugerida lista'],
+  ['md','Cobertura baja en 3 secciones del oriente','Tierra · reasignar 2 brigadas'],
+  ['lo','Pico de menciones tras evento de ayer','Intel · oportunidad de contenido'],
+  ['md','12% del padrón objetivo aún sin contactar','GOTV · 9 días para cierre de meta']
+];
+function feedItem(s){
+  return `<div class="feeditem"><span class="pip ${s[2]}"></span><div class="bd"><div class="t">${s[0]}</div>
+    <div class="m">${s[1]} · hace ${ri(1,9)} s</div></div></div>`;
+}
+function pushSignal(){
+  const f=$('#cmd-feed'); if(!f)return;
+  f.insertAdjacentHTML('afterbegin',feedItem(pick(SIGNALS)));
+  while(f.children.length>14)f.lastChild.remove();
+  $('#signal-rate').textContent=ri(38,72)+' / min';
+  // emit a map signal
+  const o=CANVASES['cmd-canvas'];
+  if(o&&o.data.poly){const p=randInside(o);const s=pick(SIGNALS);
+    o.data.signals.push({x:p.x,y:p.y,r:0,life:.9,col:s[2]==='pos'?'70,194,142':s[2]==='neg'?'229,87,92':'120,135,165'});}
+}
+/* build the 89-block grid once, with tooltip + click-to-focus */
+function buildAgentGrid(){
+  const wrap=$('#cmd-agents'); if(!wrap||wrap.children.length===89)return;
+  let h=''; for(let i=0;i<89;i++)h+=`<i data-idx="${i}"></i>`; wrap.innerHTML=h;
+  const card=wrap.closest('.card'); const tip=document.createElement('div'); tip.className='maptip'; tip.id='agent-tip'; card.appendChild(tip);
+  // live ticker
+  const tk=document.createElement('div'); tk.className='ticker'; tk.id='cmd-ticker';
+  tk.innerHTML='<span class="tk">▶ EN VIVO</span><span id="cmd-ticker-tx">Iniciando agentes…</span>';
+  const notice=wrap.nextElementSibling; (notice||wrap).after(tk);
+  wrap.addEventListener('mousemove',e=>{
+    const t=e.target.closest('i'); if(!t){tip.classList.remove('on');return;}
+    const a=ALL89[+t.dataset.idx]; const sm=SUITE_META[a.suite];
+    tip.innerHTML=`<b>${a.id} · ${a.n}</b><span style="color:${sm.color}">${sm.label}</span> · ${a._status==='work'?'ejecutando':'monitoreando'}<br><span style="color:var(--muted)">${a.r}</span><br><span style="color:var(--amber)">↳ ${a._task}</span>`;
+    const r=wrap.getBoundingClientRect(); tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px'; tip.classList.add('on');
+  });
+  wrap.addEventListener('mouseleave',()=>tip.classList.remove('on'));
+  wrap.addEventListener('click',e=>{const t=e.target.closest('i'); if(!t)return; openAgentPanel(+t.dataset.idx);});
+}
+/* reflect ALL89 status to the grid */
+function paintAgentGrid(){
+  const wrap=$('#cmd-agents'); if(!wrap||!wrap.children.length)return;
+  for(let i=0;i<89;i++){wrap.children[i].className=ALL89[i]._status;}
+}
+/* build per-suite roster cards (interactive) into each view */
+function buildRosters(){
+  SUITE_ORDER.forEach(s=>{
+    const view=$(`.view[data-view="${s}"]`); if(!view||view.querySelector('.aroster'))return;
+    const sm=SUITE_META[s];
+    const card=document.createElement('div'); card.className='card'; card.style.marginTop='14px';
+    card.innerHTML=`<h3>Agentes de la suite · <span style="color:${sm.color}">${sm.label}</span> <span class="tag">${AGENTS[s].length} activos</span></h3><div class="aroster" data-suite="${s}"></div>`;
+    view.appendChild(card);
+    const ros=card.querySelector('.aroster');
+    AGENTS[s].forEach((a,i)=>{
+      const gi=ALL89.findIndex(x=>x.suite===s&&x.id===SUITE_PREFIX[s]+'-'+String(i+1).padStart(2,'0'));
+      const row=document.createElement('div'); row.className='arow'; row.dataset.gi=gi; row.style.cursor='pointer';
+      row.innerHTML=`<span class="ad"></span><div class="ab"><b>${a.n}<span class="st"></span></b><small>${a.id} · ${a.r}</small><div class="atask"></div></div>`;
+      row.addEventListener('click',()=>openAgentPanel(gi));
+      ros.appendChild(row);
+    });
+  });
+}
+/* reflect status into the visible suite roster */
+function paintRosters(){
+  $$('.aroster').forEach(ros=>{
+    if(!ros.closest('.view').classList.contains('on'))return;
+    $$('.arow',ros).forEach(row=>{
+      const a=ALL89[+row.dataset.gi]; const work=a._status==='work';
+      row.querySelector('.ad').className='ad '+a._status;
+      const st=row.querySelector('.st'); st.textContent=work?'ejecutando':'activo'; st.className='st'+(work?' work':'');
+      const tk=row.querySelector('.atask'); tk.textContent='↳ '+a._task; tk.className='atask'+(work?' work':'');
+    });
+  });
+}
+/* one agent runs a task now (manual click = highlight + map effect) */
+function runAgent(idx,manual){
+  const a=ALL89[idx]; a._status='work'; a._task=pick(a.t);
+  paintAgentGrid(); paintRosters();
+  if($('#cmd-ticker-tx')) $('#cmd-ticker-tx').innerHTML=`<b>${a.id} ${a.n}</b> — ${a._task}`;
+  if(manual){
+    const o=CANVASES['cmd-canvas']; if(o&&o.data.poly){const p=randInside(o);o.data.signals.push({x:p.x,y:p.y,r:0,life:1,col:'79,216,232'});}
+  }
+}
+function focusAgent(idx){ runAgent(idx,true); route(ALL89[idx].suite); }
+
+/* ===== panel de detalle de agente ===== */
+function seedAgent(a){
+  if(a._done!=null)return;
+  a._done=ri(40,180); a._succ=rnd(94,99.6); a._lat=ri(180,900); a._up=rnd(99.0,99.99);
+  a._log=[]; const now=Date.now();
+  for(let i=0;i<6;i++){const d=new Date(now-i*ri(60,400)*1000);
+    a._log.push({ts:d.toLocaleTimeString('es-MX',{hour12:false}),tx:pick(a.t),ok:true});}
+}
+function renderAgentLog(a){
+  $('#am-log').innerHTML=a._log.map(l=>`<div class="lg"><span class="ts">${l.ts}</span><span>${l.tx}</span><span class="st" style="color:${l.ok?'var(--green)':'var(--amber)'}">${l.ok?'OK':'…'}</span></div>`).join('');
+}
+let _openAgent=-1,_agentTimer=null,_agentProg=0;
+function openAgentPanel(idx){
+  _openAgent=idx; const a=ALL89[idx]; seedAgent(a); const sm=SUITE_META[a.suite];
+  $('#am-ic').textContent=a.suite.slice(0,1).toUpperCase()+(a.id.split('-')[1]||'');
+  $('#am-ic').style.background=sm.color;
+  $('#am-name').textContent=a.n;
+  $('#am-role').textContent=a.id+' · '+a.r;
+  const chip=$('#am-chip'); chip.textContent='Suite '+sm.label; chip.style.background=hexA(sm.color,.15); chip.style.color=sm.color;
+  $('#am-metrics').innerHTML=`
+    <div class="mmetric"><div class="v">${a._done}</div><div class="k">Tareas hoy</div></div>
+    <div class="mmetric"><div class="v" style="color:var(--green)">${a._succ.toFixed(1)}%</div><div class="k">Éxito</div></div>
+    <div class="mmetric"><div class="v">${a._lat}<span style="font-size:12px;color:var(--muted2)">ms</span></div><div class="k">Latencia</div></div>
+    <div class="mmetric"><div class="v" style="color:var(--cyan)">${a._up.toFixed(2)}<span style="font-size:12px;color:var(--muted2)">%</span></div><div class="k">Uptime</div></div>`;
+  a._status='work'; if(!a._task)a._task=pick(a.t);
+  $('#am-task').textContent='↳ '+a._task;
+  _agentProg=ri(10,55); $('#am-prog').style.width=_agentProg+'%';
+  renderAgentLog(a);
+  $('#agent-modal').classList.add('on');
+  clearInterval(_agentTimer); _agentTimer=setInterval(tickAgentPanel,700);
+}
+function tickAgentPanel(){
+  if(_openAgent<0)return; const a=ALL89[_openAgent];
+  _agentProg+=ri(6,20);
+  if(_agentProg>=100){
+    _agentProg=0; a._done++; a._task=pick(a.t); a._lat=ri(180,900);
+    const d=new Date(); a._log.unshift({ts:d.toLocaleTimeString('es-MX',{hour12:false}),tx:a._task,ok:true});
+    if(a._log.length>14)a._log.pop(); renderAgentLog(a);
+    $('#am-task').textContent='↳ '+a._task;
+    const mv=$('#am-metrics').children; mv[0].querySelector('.v').textContent=a._done;
+    mv[2].querySelector('.v').innerHTML=a._lat+'<span style="font-size:12px;color:var(--muted2)">ms</span>';
+  }
+  $('#am-prog').style.width=_agentProg+'%';
+}
+function closeAgentPanel(){clearInterval(_agentTimer); _openAgent=-1; $('#agent-modal').classList.remove('on');}
+function agentRunNow(){if(_openAgent<0)return; _agentProg=99; tickAgentPanel(); runAgent(_openAgent,true);}
+function agentGoSuite(){if(_openAgent<0)return; const s=ALL89[_openAgent].suite; closeAgentPanel(); route(s);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAgentPanel();});
+$('#agent-modal').addEventListener('click',e=>{if(e.target.id==='agent-modal')closeAgentPanel();});
+/* main tick: ~15% of agents working at a time, rotating tasks + ticker */
+let _tkPool=[];
+function tickAgents(){
+  ALL89.forEach(a=>{ if(Math.random()<0.16){a._status='work'; a._task=pick(a.t);} else {a._status='act';} });
+  paintAgentGrid(); paintRosters();
+  _tkPool=ALL89.filter(a=>a._status==='work'); if(!_tkPool.length)_tkPool=[pick(ALL89)];
+  const ac=$('#agent-count'); if(ac)ac.textContent='89 · '+_tkPool.length+' ejecutando';
+}
+/* rotate the ticker text faster than the status tick */
+function rotateTicker(){
+  if(!_tkPool.length)return; const a=pick(_tkPool); const el=$('#cmd-ticker-tx'); if(!el)return;
+  el.innerHTML=`<b>${a.id} ${a.n}</b> — ${a._task}`;
+}
+function renderAgents(){ tickAgents(); } // compat with boot
+function renderTopics(){
+  const w=$('#cmd-topics'); if(!w)return;
+  w.innerHTML=TOPICS.map(t=>`<span class="chip ${t[1]?'hot':''}">#${t[0]} ${t[1]?'▲':'·'}</span>`).join('');
+}
+function renderAlerts(){
+  const w=$('#cmd-alerts'); if(!w)return;
+  w.innerHTML=ALERTS.map(a=>`<div class="alert ${a[0]}"><span class="lv">${a[0]==='hi'?'ALTA':a[0]==='md'?'MEDIA':'INFO'}</span>
+    <div class="tx">${a[1]}<small>${a[2]}</small></div></div>`).join('');
+  $('#alert-n').textContent=ALERTS.length;
+}
+
+const STATE={intent:42.6,sent:34,reach:184200,voters:38740,
+  intentHist:[],sentHist:[],reachHist:[],votersHist:[]};
+for(let i=0;i<24;i++){STATE.intentHist.push(rnd(40,43));STATE.sentHist.push(rnd(28,38));STATE.reachHist.push(rnd(150,190));STATE.votersHist.push(rnd(35,39));}
+
+function updateKPIs(){
+  STATE.intent=clamp(STATE.intent+rnd(-0.15,0.22),38,48);
+  STATE.sent=clamp(STATE.sent+rnd(-1.4,1.8),15,55);
+  STATE.reach+=ri(400,1500);
+  STATE.voters+=ri(20,140);
+  STATE.intentHist.push(STATE.intent);STATE.intentHist.shift();
+  STATE.sentHist.push(STATE.sent);STATE.sentHist.shift();
+  STATE.reachHist.push(STATE.reach/1000);STATE.reachHist.shift();
+  STATE.votersHist.push(STATE.voters/1000);STATE.votersHist.shift();
+
+  animateNum($('#k-intent'),STATE.intent,{dec:1,suf:'%'});
+  animateNum($('#k-sent'),STATE.sent,{dec:0,pre:'+'});
+  animateNum($('#k-reach'),STATE.reach/1000,{dec:0,suf:'k'});
+  animateNum($('#k-voters'),STATE.voters,{thousand:true});
+  $('#k-intent-spark').innerHTML=spark(STATE.intentHist,COL.amber);
+  $('#k-sent-spark').innerHTML=spark(STATE.sentHist,COL.green);
+  $('#k-reach-spark').innerHTML=spark(STATE.reachHist,COL.cobalt);
+  $('#k-voters-spark').innerHTML=spark(STATE.votersHist,COL.cyan);
+
+  const pos=ri(48,56),neg=ri(14,22),neu=100-pos-neg;
+  const sb=$('#cmd-sbar');sb.children[0].style.width=pos+'%';sb.children[1].style.width=neu+'%';sb.children[2].style.width=neg+'%';
+  $('#s-pos').textContent=pos+'%';$('#s-neu').textContent=neu+'%';$('#s-neg').textContent=neg+'%';
+  $('#syncts').textContent=new Date().toLocaleTimeString('es-MX',{hour12:false});
+}
+
+/* ===================== INTEL: floating mention bubbles ===================== */
+function buildIntelBubbles(o){
+  o.data.bubbles=[];
+  o.onResize=()=>{};
+  o.data.spawn=(sent)=>{
+    o.data.bubbles.push({x:rnd(.1,.9)*o.w,y:o.h+10,vy:-rnd(14,30),r:rnd(4,11),life:1,
+      col:sent==='pos'?COL.green:sent==='neg'?COL.red:COL.muted});
+  };
+}
+function drawIntelBubbles(o,t){
+  const ctx=o.ctx;ctx.clearRect(0,0,o.w,o.h);
+  // baseline
+  ctx.strokeStyle='rgba(125,145,185,.12)';ctx.beginPath();ctx.moveTo(0,o.h-1);ctx.lineTo(o.w,o.h-1);ctx.stroke();
+  const dt=0.016;
+  for(let i=o.data.bubbles.length-1;i>=0;i--){
+    const b=o.data.bubbles[i];b.y+=b.vy*dt*3.2;b.x+=Math.sin(t*2+b.y*.05)*.4;
+    if(b.y<-20){o.data.bubbles.splice(i,1);continue;}
+    const fade=clamp(b.y/o.h,0,1);
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);
+    ctx.fillStyle=b.col.replace(')',`,${.12+fade*.18})`).replace('rgb','rgba').replace('#','');
+    ctx.fillStyle=hexA(b.col,.10+fade*.22);ctx.fill();
+    ctx.strokeStyle=hexA(b.col,.5*fade+.2);ctx.lineWidth=1.2;ctx.stroke();
+  }
+}
+function hexA(hex,a){if(hex.startsWith('#')){const n=parseInt(hex.slice(1),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}return hex;}
+
+/* INTEL bar chart canvas (24h, interactive) */
+function buildIntelBars(o){
+  o.data.vals=[];for(let i=0;i<24;i++)o.data.vals.push(rnd(20,100)*(i>16?1.4:1));
+  o.data.hover=-1;
+  o.cv.addEventListener('mousemove',e=>{
+    const r=o.cv.getBoundingClientRect();const x=e.clientX-r.left;
+    const idx=clamp(Math.floor(x/o.w*24),0,23);o.data.hover=idx;
+    const tip=$('#intel-bartip');tip.innerHTML=`<b>${String(idx).padStart(2,'0')}:00 h</b>${fmtN(o.data.vals[idx]*12)} menciones`;
+    tip.style.left=(idx+.5)/24*o.w+'px';tip.style.top=o.h*.3+'px';tip.classList.add('on');
+  });
+  o.cv.addEventListener('mouseleave',()=>{o.data.hover=-1;$('#intel-bartip').classList.remove('on');});
+}
+function drawIntelBars(o,t){
+  const ctx=o.ctx;ctx.clearRect(0,0,o.w,o.h);
+  const v=o.data.vals,mx=Math.max(...v),bw=o.w/v.length;
+  for(let i=0;i<v.length;i++){
+    const bh=(v[i]/mx)*(o.h-12);
+    const grow=clamp((t*0.7)-(i*0.04),0,1);
+    const hh=bh*grow;
+    ctx.fillStyle=i===o.data.hover?COL.cyan:hexA(COL.cobalt,.35+.5*v[i]/mx);
+    const x=i*bw+2,y=o.h-hh;
+    ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,bw-4,hh,2):ctx.rect(x,y,bw-4,hh);ctx.fill();
+  }
+}
+
+/* ===== redes sociales monitoreadas ===== */
+const NETWORKS=[
+  {k:'X',name:'X / Twitter',ic:'𝕏',col:'#4FD8E8',base:3200},
+  {k:'FB',name:'Facebook',ic:'f',col:'#4D82F5',base:2600},
+  {k:'IG',name:'Instagram',ic:'◎',col:'#A78BFA',base:2100},
+  {k:'TT',name:'TikTok',ic:'♪',col:'#2DE0C8',base:1850},
+  {k:'YT',name:'YouTube',ic:'▶',col:'#E5575C',base:640},
+  {k:'PR',name:'Prensa / Web',ic:'¶',col:'#8C97AF',base:430}
+];
+const INTELH={menc:[],reach:[],rate:[],sov:[]};
+for(let i=0;i<24;i++){INTELH.menc.push(rnd(8,12));INTELH.reach.push(rnd(2.2,3.4));INTELH.rate.push(rnd(40,70));INTELH.sov.push(rnd(36,44));}
+
+function renderIntelNets(){
+  const wrap=$('#intel-nets'); if(!wrap)return;
+  let totalMenc=0,totalReach=0,wEng=0;
+  const rows=NETWORKS.map(nw=>{
+    const menc=Math.round(nw.base*rnd(.85,1.18));
+    const reach=Math.round(menc*rnd(45,85));
+    const pos=ri(44,60),neg=ri(12,24),neu=100-pos-neg;
+    const eng=rnd(3.2,9.4), tr=rnd(-8,18);
+    totalMenc+=menc;totalReach+=reach;wEng+=eng*menc;
+    return {nw,menc,reach,pos,neu,neg,eng,tr};
+  });
+  wrap.innerHTML=rows.map(r=>`
+    <div class="net">
+      <div class="net-ic" style="background:${r.nw.col}">${r.nw.ic}</div>
+      <div class="net-bd">
+        <div class="net-top"><b>${r.nw.name}</b><span class="mn">${fmtN(r.menc)}</span>
+          <span class="net-tr ${r.tr>=0?'up':'down'}">${r.tr>=0?'▲':'▼'} ${Math.abs(r.tr).toFixed(0)}%</span></div>
+        <div class="net-bar"><span class="p" style="width:${r.pos}%"></span><span class="u" style="width:${r.neu}%"></span><span class="n" style="width:${r.neg}%"></span></div>
+        <div class="net-kpis"><span>alcance <b>${fmtN(r.reach/1000)}k</b></span><span>engag <b>${r.eng.toFixed(1)}%</b></span><span>pos <b>${r.pos}%</b></span><span>neg <b>${r.neg}%</b></span></div>
+      </div>
+    </div>`).join('');
+  $('#intel-nets-total').textContent=fmtN(totalMenc)+' menciones';
+  return {totalMenc,totalReach,eng:wEng/totalMenc};
+}
+function renderIntelSoV(){
+  const data=[['Nuestra campaña',ri(40,46),'green'],['Adversario A',ri(26,33),''],['Adversario B',ri(15,21),''],['Otros / indecisos',ri(6,12),'amber']];
+  $('#intel-sov').innerHTML=data.map(d=>`<div class="brow"><div class="top"><span>${d[0]}</span><span>${d[1]}%</span></div><div class="track"><i class="${d[2]}" style="width:${d[1]}%"></i></div></div>`).join('');
+  return data[0][1];
+}
+const INTEL={};
+function renderIntel(){
+  const pos=ri(380,520),neu=ri(260,340),neg=ri(120,200),tot=pos+neu+neg;
+  const net=Math.round((pos-neg)/tot*100);
+  $('#intel-ring').innerHTML=ring(Math.round(pos/tot*100),COL.green,'positivo');
+  animateNum($('#intel-net'),net,{pre:net>=0?'+':''});
+  animateNum($('#intel-pos'),pos,{thousand:true});animateNum($('#intel-neu'),neu,{thousand:true});animateNum($('#intel-neg'),neg,{thousand:true});
+  $('#intel-vol').textContent=fmtN(tot)+' menciones / hora';
+  const tp=[['AguaPotable',92,'amber'],['Seguridad',78,''],['Empleo',64,'green'],['BachesYCalles',58,''],['Salud',41,'green'],['Transporte',33,''],['SonoraAvanza',88,'amber']];
+  $('#intel-topics').innerHTML=tp.map(t=>`<div class="brow"><div class="top"><span>#${t[0]}</span><span>${t[1]}</span></div><div class="track"><i class="${t[2]}" style="width:${t[1]}%"></i></div></div>`).join('');
+
+  // redes sociales + KPIs globales
+  const ng=renderIntelNets();
+  const sov=renderIntelSoV();
+  if(ng){
+    INTELH.menc.push(ng.totalMenc/1000);INTELH.menc.shift();
+    INTELH.reach.push(ng.totalReach/1e6);INTELH.reach.shift();
+    const rate=ri(42,78);INTELH.rate.push(rate);INTELH.rate.shift();
+    INTELH.sov.push(sov);INTELH.sov.shift();
+    animateNum($('#ik-menc'),ng.totalMenc/1000,{dec:1,suf:'k'});
+    animateNum($('#ik-reach'),ng.totalReach/1e6,{dec:2,suf:'M'});
+    animateNum($('#ik-rate'),rate,{dec:0});
+    animateNum($('#ik-sov'),sov,{dec:0,suf:'%'});
+    $('#ik-menc-spark').innerHTML=spark(INTELH.menc,COL.cobalt);
+    $('#ik-reach-spark').innerHTML=spark(INTELH.reach,COL.cyan);
+    $('#ik-rate-spark').innerHTML=spark(INTELH.rate,COL.amber);
+    $('#ik-sov-spark').innerHTML=spark(INTELH.sov,COL.green);
+    $('#ik-menc-d').textContent='▲ '+ri(3,14)+'%';
+    $('#ik-reach-d').textContent='▲ '+ri(2,11)+'%';
+    $('#ik-sov-d').textContent='▲ '+(sov-31)+' pts vs rival';
+    $('#intel-eng').textContent=ng.eng.toFixed(1)+'%';
+    animateNum($('#intel-infl'),ri(28,52));
+    animateNum($('#intel-bots'),ri(180,320),{thousand:true});
+  }
+}
+function pushIntelFeed(){const f=$('#intel-feed');if(!f)return;const s=pick(SIGNALS);
+  f.insertAdjacentHTML('afterbegin',feedItem(s));while(f.children.length>14)f.lastChild.remove();
+  const o=CANVASES['intel-canvas'];if(o&&o.data.spawn)o.data.spawn(s[2]);}
+
+/* ===================== DIGITAL ===================== */
+let AI_LIVE=null;
+const SAMPLES={
+  tuit:"En el oriente de Hermosillo la seguridad no se negocia: más alumbrado, patrullaje de proximidad y cámaras donde la gente las pidió. Caminé tus calles y te escuché. Vamos a recuperar la tranquilidad, colonia por colonia. 🏡 #SonoraAvanza",
+  post:"Hoy estuve en las colonias del oriente y la exigencia fue clara: queremos vivir sin miedo.\n\nMi compromiso es concreto:\n• Alumbrado en los puntos que ustedes señalaron\n• Policía de proximidad que conozca su colonia\n• Botón de auxilio enlazado a C5 en zonas críticas\n\nLa seguridad se construye con la comunidad, no a sus espaldas. Cuento contigo.",
+  discurso:"Vecinas y vecinos del oriente: ustedes no piden privilegios, piden lo más básico, llegar a casa con la certeza de estar a salvo. Por eso mi propuesta de seguridad nace aquí, en sus calles y no en un escritorio: más presencia, más luz, más cercanía. Porque una colonia tranquila es el primer ladrillo de una ciudad próspera.",
+  whatsapp:"Hola 👋 Soy de la campaña en Sonora. Esta semana presentamos el plan de seguridad para el oriente de Hermosillo: más alumbrado, patrullaje de proximidad y atención directa a tus reportes. ¿Te gustaría que te contemos cómo se aplica en tu colonia? Responde *SÍ* y un compañero te marca. 🏡"
+};
+async function generate(){
+  const topic=$('#gen-topic').value.trim()||'propuesta para mi distrito';
+  const format=$('#gen-format').value, tone=$('#gen-tone').value;
+  const btn=$('#gen-btn'), out=$('#gen-out');
+  btn.disabled=true; out.classList.add('typing'); out.textContent='Procesando con el motor de contenido…';
+  const sys="Eres el estratega de contenido de una campaña electoral estatal en Sonora, México. Escribe contenido de campaña en español, legal, propositivo y respetuoso, centrado en propuestas. Nunca ataques personales ni desinformación. Devuelve solo el texto final, sin comillas ni explicaciones.";
+  const user=`Genera un ${format} con tono ${tone} sobre: ${topic}.`;
+  try{
+    // En producción: apunta a TU gateway backend (FastAPI), nunca a la API directa con la llave en el cliente.
+    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),12000);
+    const r=await fetch("/api/generate",{method:"POST",signal:ctrl.signal,
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({format,tone,topic,system:sys,prompt:user})});
+    clearTimeout(to);
+    if(!r.ok)throw new Error('http '+r.status);
+    const data=await r.json();
+    const text=(data.text||data.content||'').trim();
+    if(!text)throw new Error('empty');
+    setAIMode(true); typeOut(out,text,()=>updatePreview(text)); $('#gen-note').textContent='Generado en vivo con IA conectada vía gateway.';
+  }catch(e){
+    setAIMode(false);
+    typeOut(out,SAMPLES[format],()=>updatePreview(SAMPLES[format])); $('#gen-note').textContent='Modo demo: respuesta de muestra. Conecta el gateway backend (FastAPI → Claude) para generar en vivo.';
+  }finally{btn.disabled=false}
+}
+function updatePreview(text){
+  $('#prev-body').textContent=text;
+  animateNum($('#prev-likes'),ri(120,890),{thousand:true});
+  animateNum($('#prev-rt'),ri(30,260),{thousand:true});
+  animateNum($('#prev-rep'),ri(12,140),{thousand:true});
+}
+function typeOut(el,text,done){
+  el.classList.add('typing'); el.textContent=''; let i=0;
+  const step=()=>{el.textContent=text.slice(0,i); i+=Math.max(2,Math.round(text.length/110));
+    if(i<text.length){requestAnimationFrame(step)}else{el.textContent=text;el.classList.remove('typing');if(done)done();}};
+  step();
+}
+function setAIMode(live){AI_LIVE=live;const b=$('#aimode');b.textContent='IA: '+(live?'en vivo':'demo');
+  b.className='aimode '+(live?'live':'demo');$('#digital-engine').textContent=live?'IA en vivo':'IA generativa (demo)';}
+function renderDigital(){
+  const q=[['Spot de cierre — agua','Programado','amber',86],['Reel recorrido oriente','En revisión','',54],['Tarjeta propuesta empleo','Listo','green',100],['Hilo X — seguridad','Borrador IA','',30]];
+  $('#digital-queue').innerHTML=q.map(t=>`<div class="brow"><div class="top"><span>${t[0]}</span><span>${t[1]}</span></div><div class="track"><i class="${t[2]}" style="width:${t[3]}%"></i></div></div>`).join('');
+}
+
+/* ===================== TIERRA ===================== */
+const TBRIG=[['Brigada 1 · Centro',88,'green'],['Brigada 3 · Pitic',72,'green'],['Brigada 5 · Villa de Seris',61,''],['Brigada 7 · Las Quintas',44,''],['Brigada 9 · Oriente',23,'amber']];
+let tHomes=2840;
+function renderTierra(){
+  $('#t-brig').textContent='18';
+  $('#t-sec').textContent='96';
+  $('#t-inc').textContent='7';
+  $('#tierra-brig').innerHTML=TBRIG.map(b=>`<div class="brow"><div class="top"><span>${b[0]}</span><span>${b[1]}%</span></div><div class="track"><i class="${b[2]}" style="width:${b[1]}%"></i></div></div>`).join('');
+  const inc=[['md','Bloqueo vecinal en Oriente, ruta desviada','Brigada 9 · en gestión'],['lo','Perro agresivo reportado en Las Quintas','resuelto'],['lo','Solicitud de material en Villa de Seris','enviado']];
+  $('#tierra-inc').innerHTML=inc.map(a=>`<div class="alert ${a[0]}"><span class="lv">${a[0]==='md'?'ATENCIÓN':'INFO'}</span><div class="tx">${a[1]}<small>${a[2]}</small></div></div>`).join('');
+  const cov=(96/142*100).toFixed(0);$('#tierra-cov').textContent=cov+'%';$('#tierra-cov2').textContent=cov+'%';
+}
+function tierraLive(){tHomes+=ri(3,14);animateNum($('#t-homes'),tHomes,{thousand:true});$('#t-homes-d').textContent='▲ '+ri(3,14);}
+
+/* ===================== GOTV ===================== */
+function renderGOTV(){
+  const steps=[['Padrón objetivo',100,72000],['Identificados',86,61900],['Contactados',64,46100],['Comprometidos',41,29500],['Plan de traslado',28,20200]];
+  $('#gotv-funnel').innerHTML=steps.map(s=>`<div class="fstep"><span class="lb">${s[0]}</span><div class="bar" style="width:0%">${fmtN(s[2])}</div></div>`).join('');
+  // animate widths after paint
+  requestAnimationFrame(()=>{$$('#gotv-funnel .bar').forEach((el,i)=>{el.style.width=steps[i][1]+'%';});});
+  $('#gotv-ring').innerHTML=ring(57,COL.amber,'de meta');
+  const plan=[['Rutas de traslado definidas',92,'green'],['Voluntarios confirmados',78,''],['Casas de enlace listas',85,'green'],['Recordatorios programados',100,'green'],['Logística de jornada',64,'amber']];
+  $('#gotv-plan').innerHTML=plan.map(p=>`<div class="brow"><div class="top"><span>${p[0]}</span><span>${p[1]}%</span></div><div class="track"><i class="${p[2]}" style="width:${p[1]}%"></i></div></div>`).join('');
+  // heatgrid 100 sections
+  const hg=$('#gotv-heat');let h='';
+  for(let i=0;i<100;i++){const p=clamp(rnd(0,1)+(i%10<4?.15:-.1),0,1);
+    const col=p>.66?COL.green:p>.4?COL.cobalt:'#1c2740';
+    h+=`<div class="hc" style="background:${col}" data-p="${Math.round(p*100)}" data-s="${400+i}"></div>`;}
+  hg.innerHTML=h;
+  $$('#gotv-heat .hc').forEach(c=>{
+    c.addEventListener('mouseenter',()=>$('#gotv-heat-tip').textContent=`Sección ${c.dataset.s} · propensión ${c.dataset.p}%`);
+  });
+}
+
+/* ===================== SHIELD: narrative network ===================== */
+const NARR=[
+  {n:'Rumor obra inconclusa',state:'Contenida',col:COL.green,size:14},
+  {n:'Spot comparativo adversario',state:'Monitoreo',col:COL.amber,size:26},
+  {n:'Cadena WhatsApp dato falso',state:'Desmentida',col:COL.green,size:12},
+  {n:'Crítica por baches',state:'Atender',col:COL.amber,size:20},
+  {n:'Ataque en cuenta anónima',state:'Adversa',col:COL.red,size:30}
+];
+function buildShield(o){
+  o.data.nodes=[];o.data.edges=[];
+  o.onResize=(c)=>{
+    // central candidate node + narrative nodes around
+    c.data.nodes=[{n:'Campaña',col:COL.cyan,size:16,x:c.w/2,y:c.h/2,fixed:true}];
+    NARR.forEach((nn,i)=>{
+      const a=i/NARR.length*Math.PI*2;
+      c.data.nodes.push({...nn,x:c.w/2+Math.cos(a)*c.w*0.3,y:c.h/2+Math.sin(a)*c.h*0.32,
+        vx:0,vy:0,phase:rnd(0,6)});
+    });
+    c.data.edges=NARR.map((_,i)=>[0,i+1]);
+  };
+}
+function drawShield(o,t){
+  const ctx=o.ctx;ctx.clearRect(0,0,o.w,o.h);
+  const N=o.data.nodes;if(!N.length)return;
+  // gentle float
+  for(let i=1;i<N.length;i++){const n=N[i];n.x+=Math.sin(t*0.6+n.phase)*0.25;n.y+=Math.cos(t*0.5+n.phase)*0.25;}
+  // edges (animated dash = propagation)
+  o.data.edges.forEach(([a,b])=>{
+    const A=N[a],B=N[b];
+    const adverse=B.col===COL.red;
+    ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);
+    ctx.strokeStyle=hexA(B.col,.25);ctx.lineWidth=adverse?2:1.2;
+    ctx.setLineDash([6,6]);ctx.lineDashOffset=-(t*40)%12;ctx.stroke();ctx.setLineDash([]);
+    // traveling packet
+    const k=(t*0.3+a*0.3)%1;const px=lerp(A.x,B.x,k),py=lerp(A.y,B.y,k);
+    ctx.beginPath();ctx.arc(px,py,2.4,0,7);ctx.fillStyle=B.col;ctx.fill();
+  });
+  // nodes
+  for(let i=0;i<N.length;i++){const n=N[i];
+    const pl=Math.sin(t*2+i)*.5+.5;
+    ctx.beginPath();ctx.arc(n.x,n.y,n.size+pl*5,0,7);ctx.fillStyle=hexA(n.col,.12);ctx.fill();
+    ctx.beginPath();ctx.arc(n.x,n.y,n.size,0,7);ctx.fillStyle=hexA(n.col,.85);ctx.fill();
+    ctx.strokeStyle='rgba(8,12,22,.9)';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='rgba(234,238,247,.85)';ctx.font='600 9.5px JetBrains Mono, monospace';ctx.textAlign='center';
+    ctx.fillText(n.n,n.x,n.y+n.size+13);
+  }
+}
+function renderShield(){
+  $('#shield-ring').innerHTML=ring(41,COL.amber,'riesgo');
+  const log=[['hi','08:42 — Pico de menciones negativas sobre seguridad','+340% en 30 min'],['md','10:15 — Cuenta no verificada amplifica rumor','alcance 12k'],['lo','11:30 — Respuesta oficial publicada','sentimiento estabilizándose']];
+  $('#shield-log').innerHTML=log.map(a=>`<div class="alert ${a[0]}"><span class="lv">${a[0]==='hi'?'ALTA':a[0]==='md'?'MEDIA':'OK'}</span><div class="tx">${a[1]}<small>${a[2]}</small></div></div>`).join('');
+  typeOut($('#shield-resp'),"Gracias por la inquietud sobre la obra del oriente. Los hechos: la obra avanza en tiempo y el reporte cita una etapa ya superada. Aquí el calendario verificable y las fotos de avance de esta semana. Seguiremos informando con transparencia, porque tu colonia merece datos, no rumores.");
+}
+function shieldTip(o,x,y){
+  for(const n of o.data.nodes){if(Math.hypot(n.x-x,n.y-y)<n.size+4){
+    return `<b>${n.n}</b>${n.state||'Centro de campaña'}`;}}
+  return '';
+}
+
+/* ===================== DEFENSA: casillas grid ===================== */
+function buildDefensa(o){
+  o.data.cells=[];
+  o.onResize=(c)=>{
+    const N=418,cols=Math.max(14,Math.floor(c.w/26)),rows=Math.ceil(N/cols);
+    c.data.cols=cols;c.data.rows=rows;
+    const cw=c.w/cols,chh=c.h/rows,pad=Math.min(cw,chh)*0.16;
+    if(!c.data.cells.length){
+      for(let i=0;i<N;i++){const gx=i%cols,gy=Math.floor(i/cols);
+        c.data.cells.push({i,gx,gy,state:0,t:0,inc:Math.random()<0.012});}
+    }
+    c.data.cw=cw;c.data.chh=chh;c.data.pad=pad;
+  };
+}
+function drawDefensa(o,t){
+  const ctx=o.ctx;ctx.clearRect(0,0,o.w,o.h);
+  const D=o.data;if(!D.cells)return;
+  for(const c of D.cells){
+    const x=c.gx*D.cw+D.pad,y=c.gy*D.chh+D.pad,w=D.cw-D.pad*2,h=D.chh-D.pad*2;
+    let col='rgba(125,145,185,.16)';
+    if(c.inc&&c.state>=1)col=COL.red;
+    else if(c.state>=2)col=hexA(COL.green,.9);
+    else if(c.state>=1)col=hexA(COL.cobalt,.85);
+    ctx.fillStyle=col;
+    ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,2):ctx.rect(x,y,w,h);ctx.fill();
+    // flash on recent capture
+    if(c.t>0){c.t-=0.016;ctx.strokeStyle=hexA(COL.green,clamp(c.t,0,1));ctx.lineWidth=2;ctx.stroke();}
+  }
+}
+let dActas=0,dInstalled=0;
+function defensaStep(){
+  const o=CANVASES['defensa-canvas'];if(!o||!o.data.cells)return;
+  // install some, capture some
+  for(let k=0;k<ri(2,6);k++){const c=pick(o.data.cells);if(c.state===0){c.state=1;dInstalled++;}}
+  for(let k=0;k<ri(2,7);k++){const c=pick(o.data.cells.filter(c=>c.state===1&&!c.inc));if(c){c.state=2;c.t=1;dActas++;}}
+  dActas=Math.min(418,dActas);
+  animateNum($('#d-actas'),dActas,{thousand:true});$('#d-actas-d').textContent='▲ '+ri(2,9);
+  $('#d-prep').textContent=(dActas/418*100).toFixed(0)+'% capturado';
+  defensaCount();
+}
+function defensaCount(){
+  const base=[['Candidatura propia',42.6,'amber'],['Adversario A',31.2,''],['Adversario B',18.4,''],['Otros / nulos',7.8,'']];
+  $('#defensa-count').innerHTML=base.map(c=>{const v=(c[1]+rnd(-0.4,0.4)).toFixed(1);
+    return `<div class="brow"><div class="top"><span>${c[0]}</span><span>${v}%</span></div><div class="track"><i class="${c[2]}" style="width:${v}%"></i></div></div>`}).join('');
+}
+function renderDefensa(){
+  $('#d-reps').textContent='402';$('#d-cov').textContent='96%';$('#d-inc').textContent='5';
+  const inc=[['lo','Casilla 0412-B instalada con retraso de 20 min','resuelto'],['md','Falta funcionario en 0477-C1','en gestión'],['lo','Propaganda cercana reportada y retirada','resuelto']];
+  $('#defensa-inc').innerHTML=inc.map(a=>`<div class="alert ${a[0]}"><span class="lv">${a[0]==='md'?'ATENCIÓN':'INFO'}</span><div class="tx">${a[1]}<small>${a[2]}</small></div></div>`).join('');
+  defensaCount();
+}
+function defensaTip(o,x,y){
+  const D=o.data;if(!D.cw)return'';
+  const gx=Math.floor(x/D.cw),gy=Math.floor(y/D.chh),i=gy*D.cols+gx;
+  const c=D.cells[i];if(!c)return'';
+  const st=c.inc&&c.state>=1?'Incidencia':c.state>=2?'Acta capturada':c.state>=1?'Instalada':'Pendiente';
+  return `<b>Casilla ${String(400+c.i).padStart(4,'0')}</b>${st}`;
+}
+
+/* ===== mini-flujo: procesamiento de acta en cadena (multiagente) ===== */
+const ACTA_STEPS=[
+  {t:'Captura',ag:'DEF-10 · Chatbot Rep.',ic:'⬆',st:'recibiendo foto del acta…'},
+  {t:'OCR de Actas',ag:'DEF-02 · OCR',ic:'⊞',st:'leyendo cifras manuscritas…'},
+  {t:'Validador Aritmético',ag:'DEF-03 · Validador',ic:'∑',st:'cuadrando totales…'},
+  {t:'Det. Inconsistencias',ag:'DEF-05 · Anomalías',ic:'⚠',st:'comparando vs histórico…'},
+  {t:'Conteo PREP',ag:'DEF-04 · PREP',ic:'▲',st:'integrando al conteo…'}
+];
+const STEP_DONE=['acta recibida','cifras extraídas','totales cuadran','sin anomalías','integrada al PREP'];
+function renderActaFlow(){
+  $('#acta-flow').innerHTML=ACTA_STEPS.map((s,i)=>`${i>0?'<div class="farrow">→</div>':''}
+    <div class="fnode" id="fn-${i}"><div class="fn-h"><div class="fn-ic">${s.ic}</div>
+      <div><div class="fn-t">${s.t}</div><div class="fn-ag">${s.ag}</div></div></div>
+      <div class="fn-st" id="fnst-${i}">en espera</div><div class="fn-bar"><i id="fnbar-${i}"></i></div></div>`).join('');
+}
+function setNode(i,state,txt){
+  const n=$('#fn-'+i); if(!n)return; n.className='fnode '+state; const st=$('#fnst-'+i);
+  if(state==='active'){st.textContent=ACTA_STEPS[i].st;st.className='fn-st work';}
+  else if(state==='done'){st.textContent=txt||'OK';st.className='fn-st ok';}
+}
+function runNodeBar(i){return new Promise(res=>{const bar=$('#fnbar-'+i);let p=0;
+  const iv=setInterval(()=>{p+=ri(9,22);if(p>=100){p=100;bar.style.width='100%';clearInterval(iv);setTimeout(res,160);}else bar.style.width=p+'%';},80);});}
+function actaLog(ag,tx,cls){const l=$('#acta-log'); if(!l)return; if(l.querySelector('.ph'))l.innerHTML='';
+  const d=new Date();
+  l.insertAdjacentHTML('afterbegin',`<div class="lg"><span class="ts">${d.toLocaleTimeString('es-MX',{hour12:false})}</span><span>${ag} — ${tx}</span><span class="st" style="color:${cls==='ok'?'var(--green)':'var(--amber)'}">${cls==='ok'?'OK':'…'}</span></div>`);
+  while(l.children.length>16)l.lastChild.remove();}
+function renderActaResult(casilla,votos,total,inconsist){
+  const rows=Object.entries(votos).map(([k,v])=>`<div class="ar"><span>${k}</span><b>${v}</b></div>`).join('');
+  $('#acta-result').innerHTML=`<div class="ar"><span>Casilla</span><b style="color:var(--amber)">${casilla}</b></div>${rows}
+    <div class="ar"><span>Total votos</span><b>${total}</b></div>
+    <div class="ar"><span>Cuadre aritmético</span><b style="color:var(--green)">✓ correcto</b></div>
+    <div class="ar"><span>Validación final</span><b style="color:${inconsist===null?'var(--muted2)':inconsist?'var(--amber)':'var(--green)'}">${inconsist===null?'…procesando':inconsist?'⚠ marcada para revisión':'✓ validada'}</b></div>`;
+}
+function actaSleep(ms){return new Promise(r=>setTimeout(r,ms));}
+let _actaBusy=false;
+async function procesarActa(){
+  if(_actaBusy)return; _actaBusy=true;
+  const btn=$('#acta-btn'); btn.disabled=true; btn.textContent='Procesando…';
+  renderActaFlow();
+  const casilla=String(400+ri(1,418)).padStart(4,'0')+'-'+pick(['B','C1','C2','E']);
+  const votos={'Candidatura propia':ri(120,260),'Adversario A':ri(80,180),'Adversario B':ri(40,110),'Otros / Nulos':ri(10,45)};
+  const total=Object.values(votos).reduce((a,b)=>a+b,0);
+  const inconsist=Math.random()<0.22;
+  for(let i=0;i<ACTA_STEPS.length;i++){
+    setNode(i,'active'); actaLog(ACTA_STEPS[i].ag,ACTA_STEPS[i].st,'work');
+    await runNodeBar(i);
+    if(i===1)renderActaResult(casilla,votos,total,null);
+    const flag=(i===3&&inconsist);
+    setNode(i,'done',flag?'⚠ revisar':'OK');
+    actaLog(ACTA_STEPS[i].ag, flag?'inconsistencia leve marcada para revisión':STEP_DONE[i], 'ok');
+    await actaSleep(140);
+  }
+  renderActaResult(casilla,votos,total,inconsist);
+  // integrar al PREP en vivo
+  dActas=Math.min(418,dActas+1); $('#d-actas').textContent=fmtN(dActas);
+  $('#d-prep').textContent=(dActas/418*100).toFixed(0)+'% capturado'; defensaCount();
+  // marcar una casilla en verde en el mapa
+  const o=CANVASES['defensa-canvas']; if(o&&o.data.cells){const c=pick(o.data.cells.filter(c=>c.state<2&&!c.inc));if(c){c.state=2;c.t=1;}}
+  btn.disabled=false; btn.textContent='▶ Procesar otra acta'; _actaBusy=false;
+}
+
+/* ============================ BOOT ============================ */
+// canvases
+makeCanvas('cmd-canvas',(o,t)=>drawDistrict(o,t,0.016),o=>buildDistrict(o,{brigades:11,geo:GEO_SON}));
+makeCanvas('tierra-canvas',(o,t)=>{
+  // attach incidents once
+  if(!o.data.incidents&&o.data.poly){o.data.incidents=[];for(let i=0;i<6;i++)o.data.incidents.push(randInside(o));}
+  drawDistrict(o,t,0.016);
+},o=>buildDistrict(o,{brigades:14,geo:GEO_HMO}));
+makeCanvas('intel-canvas',drawIntelBubbles,buildIntelBubbles);
+makeCanvas('intel-bars',drawIntelBars,buildIntelBars);
+makeCanvas('shield-canvas',drawShield,buildShield);
+makeCanvas('defensa-canvas',drawDefensa,buildDefensa);
+
+attachMapTip('cmd-canvas','cmd-tip',(o,x,y)=>{
+  for(const c of (o.data.col||[])){if(Math.hypot(c.px-x,c.py-y)<26)return `<b>${c.n}</b>Cobertura ${Math.round(c.cov*100)}%`;}
+  return '';
+});
+attachMapTip('tierra-canvas','tierra-tip',(o,x,y)=>{
+  for(const b of (o.data.brig||[])){if(Math.hypot(b.x-x,b.y-y)<10)return `<b>${b.id} · ${b.name}</b>${b.homes} hogares hoy`;}
+  for(const c of (o.data.col||[])){if(Math.hypot(c.px-x,c.py-y)<26)return `<b>${c.n}</b>Avance ${Math.round(c.cov*100)}%`;}
+  return '';
+});
+attachMapTip('shield-canvas','shield-tip',shieldTip);
+attachMapTip('defensa-canvas','defensa-tip',defensaTip);
+
+// update map coverage stats
+function syncMapStats(){
+  const cc=CANVASES['cmd-canvas'];if(cc&&cc.data.coverage!=null){const p=Math.round(cc.data.coverage);$('#cmd-map-cov').textContent=p+'%';$('#cmd-map-pct').textContent=p+'%';}
+  const tc=CANVASES['tierra-canvas'];if(tc&&tc.data.coverage!=null){const p=Math.round(tc.data.coverage);$('#tierra-map-cov').textContent=p+'%';}
+}
+
+// render all
+buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
+renderIntel();renderDigital();renderTierra();renderGOTV();renderShield();renderDefensa();renderActaFlow();
+for(let i=0;i<8;i++)pushSignal();
+for(let i=0;i<7;i++)pushIntelFeed();
+tierraLive();
+
+// intervals
+setInterval(pushSignal,2200);
+setInterval(renderAgents,3000);
+setInterval(rotateTicker,1900);
+setInterval(updateKPIs,2600);
+setInterval(pushIntelFeed,2600);
+setInterval(renderIntel,5000);
+setInterval(tierraLive,3200);
+setInterval(defensaStep,3000);
+setInterval(syncMapStats,1000);
+
+$('#gen-topic').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
+
+// start master animation loop
+requestAnimationFrame(masterLoop);
+</script>
+</body>
+</html>
