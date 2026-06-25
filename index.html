@@ -256,6 +256,15 @@
   .worldref a{color:var(--cyan);text-decoration:none;white-space:nowrap}
   .worldref a:hover{text-decoration:underline}
 
+  /* barras por hora (jornada) */
+  .hbars{display:flex;align-items:flex-end;gap:4px;height:130px;padding:6px 0 18px}
+  .hbars .hb{flex:1;background:linear-gradient(180deg,var(--cobalt),var(--cyan));border-radius:3px 3px 0 0;min-height:2px;height:2px;transition:height .6s cubic-bezier(.2,.8,.2,1);position:relative}
+  .hbars .hb.amber{background:linear-gradient(180deg,var(--amber),#ffd27a)}
+  .hbars .hb.green{background:linear-gradient(180deg,var(--green),#7ee0b4)}
+  .hbars .hb span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:8px;color:var(--muted2)}
+  .hbars .hb b{position:absolute;top:-15px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:8px;color:var(--text);opacity:0;transition:.3s}
+  .hbars .hb:hover b{opacity:1}
+
   /* sentiment gauge / bars */
   .sbar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0}
   .sbar span{display:block;height:100%;transition:width .8s ease}
@@ -2232,6 +2241,115 @@ async function procesarActa(){
   btn.disabled=false; btn.textContent='▶ Procesar otra acta'; _actaBusy=false;
 }
 
+/* ===== EXTRAS por módulo (todo: IA + WhatsApp + celular, sin hardware) ===== */
+function extraCard(suite,html){
+  const view=$(`.view[data-view="${suite}"]`); if(!view)return null;
+  const card=document.createElement('div'); card.className='card'; card.style.marginTop='14px'; card.innerHTML=html;
+  view.appendChild(card); return card;
+}
+function buildExtras(){
+  extraCard('command',`<h3><span>📄 Reporte ejecutivo diario <span class="tag">IA</span></span>
+    <span class="ops-ctrl"><button class="btn sm" onclick="genReporte()" id="rep-btn">Generar y enviar por WhatsApp</button></span></h3>
+    <div class="output" id="rep-out" style="min-height:90px"><span class="ph" style="color:var(--muted2)">La IA redacta el resumen del día (intención, sentimiento, territorio, riesgos) y lo envía al comité por WhatsApp.</span></div>`);
+  extraCard('intel',`<h3>Influencers clave <span class="tag">a favor / en contra</span></h3>
+    <div class="grid g2"><div><div style="font-family:var(--mono);font-size:9.5px;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">A favor</div><div class="blist" id="infl-pro"></div></div>
+    <div><div style="font-family:var(--mono);font-size:9.5px;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Adversos</div><div class="blist" id="infl-con"></div></div></div>`);
+  extraCard('digital',`<h3>Agente de voz IA · llamadas <span class="tag">automatización</span></h3>
+    <div class="stat-inline" id="voice-kpis"></div>
+    <div class="feed" id="voice-feed" style="max-height:170px;margin-top:12px"></div>
+    <div class="notice">Llamadas automatizadas con voz IA para encuestas y recordatorios. El votante solo contesta su teléfono.</div>`);
+  extraCard('tierra',`<h3>Reportes ciudadanos · WhatsApp <span class="tag">en vivo</span></h3>
+    <div class="feed" id="cit-feed" style="max-height:260px"></div>
+    <div class="notice">El ciudadano manda foto + ubicación por WhatsApp; la IA clasifica y asigna a la brigada o dependencia. Solo celular.</div>`);
+  extraCard('gotv',`<h3><span>Simulador de jornada · día D <span class="tag" id="diad-proj">—</span></span>
+    <span class="ops-ctrl"><button class="btn sm" onclick="simDiaD()" id="diad-btn">▶ Simular jornada</button></span></h3>
+    <div class="hbars" id="diad-bars"></div>
+    <div class="notice">Participación por hora vs. meta. La IA proyecta el cierre y alerta secciones rezagadas.</div>`);
+  extraCard('shield',`<h3>Cola de verificación · fact-check <span class="tag">IA + humano</span></h3><div class="blist" id="fc-list"></div>`);
+  extraCard('defensa',`<h3>Participación por hora <span class="tag">jornada electoral</span></h3>
+    <div class="hbars" id="defhr-bars"></div>
+    <div class="notice">Afluencia estimada por hora con base en reportes de representantes (foto/registro por WhatsApp).</div>`);
+}
+/* COMMAND — reporte ejecutivo */
+function genReporte(){
+  const out=$('#rep-out'),btn=$('#rep-btn'); if(!out)return; btn.disabled=true;
+  const txt=`REPORTE EJECUTIVO — ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString('es-MX',{hour12:false})}\n\n`+
+    `• Intención de voto: ${STATE.intent.toFixed(1)}% · tendencia al alza.\n`+
+    `• Sentimiento neto: +${STATE.sent.toFixed(0)} · alcance ${(STATE.reach/1000).toFixed(0)}k hoy.\n`+
+    `• Territorio: cobertura en aumento; brigadas activas en Hermosillo y 18 municipios.\n`+
+    `• Riesgo (Shield): ${SHIELD?Math.round(SHIELD.risk):41}/100 — sin crisis abiertas.\n`+
+    `• GOTV: 57% de la meta de movilización; priorización por sección actualizada.\n\n`+
+    `Recomendación IA: concentrar brigadas en secciones de alta propensión del oriente y reforzar contenido de seguridad.`;
+  typeOut(out,txt,()=>{btn.disabled=false;});
+}
+/* INTEL — influencers */
+function renderInfluencers(){
+  const pro=[['@SonoraJoven','TikTok',ri(30,55)],['@VozDelNorte','X',ri(25,45)],['Radio Hermosillo','Prensa',ri(35,60)],['@LíderColonias','FB',ri(18,35)]];
+  const con=[['@OposiciónMX','X',ri(28,48)],['@CríticoSon','FB',ri(20,38)],['Blog Adverso','Web',ri(15,30)]];
+  const row=(d,col)=>`<div class="brow"><div class="top"><span>${d[0]} <span style="color:var(--muted2)">· ${d[1]}</span></span><span>${d[2]}k alc.</span></div><div class="track"><i class="${col}" style="width:${Math.min(100,d[2]*1.6)}%"></i></div></div>`;
+  if($('#infl-pro'))$('#infl-pro').innerHTML=pro.map(d=>row(d,'green')).join('');
+  if($('#infl-con'))$('#infl-con').innerHTML=con.map(d=>row(d,'')).join('');
+}
+/* DIGITAL — voz IA */
+const VOICE={calls:0,done:0,pos:0};
+function renderVoiceKPIs(){const k=$('#voice-kpis');if(!k)return;
+  k.innerHTML=`<div class="si"><div class="v">${fmtN(VOICE.calls)}</div><div class="k">Llamadas hoy</div></div>
+    <div class="si"><div class="v" style="color:var(--green)">${fmtN(VOICE.done)}</div><div class="k">Encuestas completas</div></div>
+    <div class="si"><div class="v" style="color:var(--cyan)">${VOICE.calls?Math.round(VOICE.pos/Math.max(1,VOICE.done)*100):0}%</div><div class="k">Apoyo detectado</div></div>`;}
+function voiceTick(){
+  VOICE.calls+=ri(2,7); if(Math.random()<.7){VOICE.done+=ri(1,4);if(Math.random()<.6)VOICE.pos+=ri(1,3);}
+  const f=$('#voice-feed');
+  if(f){const col=pick(COLONIAS_HMO);const r=Math.random();
+    const tx=r<.5?`📞 Llamada IA → vecino de ${col}: encuesta completada (apoyo)`:r<.8?`📞 Recordatorio de voto entregado en ${col}`:`📞 Vecino de ${col}: solicita información de propuesta`;
+    f.insertAdjacentHTML('afterbegin',`<div class="feeditem"><span class="pip ${r<.5?'pos':'neu'}"></span><div class="bd"><div class="t">${tx}</div><div class="m">Voz IA · hace 0 s</div></div></div>`);while(f.children.length>14)f.lastChild.remove();}
+  renderVoiceKPIs();
+}
+const COLONIAS_HMO=['Centro','Pitic','Modelo','San Benito','Las Quintas','Villa de Seris','Olivares','Y Griega','Sahuaro'];
+/* TIERRA — reportes ciudadanos */
+function pushCitizen(){
+  const f=$('#cit-feed'); if(!f)return; const col=pick(COLONIAS_HMO);
+  const items=[['Bache reportado','Servicios Públicos','neu'],['Fuga de agua','CEA · brigada notificada','neg'],['Alumbrado fundido','CFE · en gestión','neu'],['Basura acumulada','Limpia · asignado','neu'],['Felicitación al candidato','registrado','pos'],['Solicitud de apoyo escolar','enlace social','pos']];
+  const it=pick(items);
+  f.insertAdjacentHTML('afterbegin',`<div class="feeditem"><span class="pip ${it[2]}"></span><div class="bd"><div class="t">📷 ${it[0]} · ${col}</div><div class="m">WhatsApp ciudadano → ${it[1]} · hace ${ri(1,9)} s</div></div></div>`);
+  while(f.children.length>16)f.lastChild.remove();
+}
+/* GOTV — simulador día D */
+const DIAD_HRS=['8','9','10','11','12','13','14','15','16','17','18'];
+function renderDiaD(fill){
+  const c=$('#diad-bars'); if(!c)return;
+  if(!c.children.length){c.innerHTML=DIAD_HRS.map(h=>`<div class="hb" style="height:2px"><b></b><span>${h}h</span></div>`).join('');}
+  const target=[8,18,30,46,55,60,66,74,82,90,100]; // % acumulado de la meta horaria
+  $$('#diad-bars .hb').forEach((el,i)=>{
+    const v=fill?target[i]*rnd(.92,1.04):2;
+    el.style.height=clamp(v,2,100)+'%';
+    el.className='hb'+(v>80?' green':v>50?'':' amber');
+    el.querySelector('b').textContent=fill?Math.round(v)+'%':'';
+  });
+}
+function simDiaD(){
+  const btn=$('#diad-btn'); if(btn){btn.disabled=true;btn.textContent='Simulando…';}
+  renderDiaD(false);
+  let i=0; const iv=setInterval(()=>{i++;
+    const els=$$('#diad-bars .hb');const target=[8,18,30,46,55,60,66,74,82,90,100];
+    if(els[i-1]){const v=target[i-1]*rnd(.92,1.04);els[i-1].style.height=clamp(v,2,100)+'%';els[i-1].className='hb'+(v>80?' green':v>50?'':' amber');els[i-1].querySelector('b').textContent=Math.round(v)+'%';}
+    $('#diad-proj').textContent=`proyección cierre: ${Math.round(target[Math.min(i-1,10)]*0.98)}% de meta`;
+    if(i>=DIAD_HRS.length){clearInterval(iv);if(btn){btn.disabled=false;btn.textContent='▶ Simular otra vez';}$('#diad-proj').textContent='✓ meta alcanzada (proyección 98%)';}
+  },380);
+}
+/* SHIELD — fact-check */
+function renderFactCheck(){
+  const fc=[['Rumor: obra del oriente cancelada','FALSO','red','avanza en tiempo · evidencia publicada'],['Video editado fuera de contexto','FALSO','red','original verificado'],['Cifra de seguridad citada por adversario','ENGAÑOSO','amber','usa dato viejo'],['Propuesta de agua es viable','VERDADERO','green','validado con datos oficiales'],['Cadena de WhatsApp sobre impuestos','EN REVISIÓN','','en proceso 2/3 fuentes']];
+  const el=$('#fc-list'); if(!el)return;
+  el.innerHTML=fc.map(f=>`<div class="brow"><div class="top"><span>${f[0]}</span><span style="color:${f[2]==='red'?'var(--red)':f[2]==='green'?'var(--green)':f[2]==='amber'?'var(--amber)':'var(--muted2)'}">${f[1]}</span></div><div class="track"><i class="${f[2]==='red'?'':f[2]==='green'?'green':'amber'}" style="width:${f[1]==='EN REVISIÓN'?60:100}%"></i></div><div style="font-family:var(--mono);font-size:9.5px;color:var(--muted2);margin-top:3px">${f[3]}</div></div>`).join('');
+}
+/* DEFENSA — participación por hora */
+function renderDefHr(){
+  const c=$('#defhr-bars'); if(!c)return;
+  const vals=[6,12,19,27,34,40,47,55,63,70,76]; // % participación acumulada
+  c.innerHTML=DIAD_HRS.map((h,i)=>`<div class="hb green" style="height:2px"><b>${vals[i]}%</b><span>${h}h</span></div>`).join('');
+  requestAnimationFrame(()=>{$$('#defhr-bars .hb').forEach((el,i)=>{el.style.height=vals[i]+'%';});});
+}
+
 /* ============================ BOOT ============================ */
 // canvases
 makeCanvas('cmd-canvas',(o,t)=>drawDistrict(o,t,0.016),o=>buildDistrict(o,{brigades:11,geo:GEO_SON}));
@@ -2266,7 +2384,9 @@ function syncMapStats(){
 }
 
 // render all
-buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
+buildExtras();buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
+renderInfluencers();renderVoiceKPIs();renderDiaD(false);renderFactCheck();renderDefHr();
+for(let i=0;i<6;i++)pushCitizen();
 renderIntel();renderDigital();renderTierra();renderGOTV();renderShield();renderDefensa();renderActaFlow();
 OPSTATE.posts=ri(180,420);OPSTATE.reach=ri(120000,320000);OPSTATE.replies=ri(60,180);renderOps();
 renderVoters();renderProjection();renderOpStatus();
@@ -2286,6 +2406,9 @@ setInterval(defensaStep,3000);
 setInterval(opsTick,3400);
 setInterval(renderProjection,7000);
 setInterval(renderOpStatus,4000);
+setInterval(voiceTick,3600);
+setInterval(pushCitizen,4200);
+setInterval(renderInfluencers,9000);
 setInterval(syncMapStats,1000);
 
 $('#gen-topic').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
