@@ -203,6 +203,31 @@
   .acta .ar:last-child{border-bottom:0}
   .acta .ar b{color:var(--text)}
 
+  /* red de respuesta en redes (Digital) */
+  .ops{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .op{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;border-left:3px solid var(--line2);transition:.3s}
+  .op.def{border-left-color:var(--green)}
+  .op.off{border-left-color:var(--red)}
+  .op.idle{opacity:.55}
+  .op-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .op-av{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;font-size:11px;color:#0a0e18;background:linear-gradient(135deg,var(--cobalt),var(--cyan))}
+  .op-id{min-width:0;flex:1}
+  .op-id b{font-size:12.5px;display:block;font-family:var(--disp);letter-spacing:.02em;line-height:1.1}
+  .op-id span{font-family:var(--mono);font-size:9px;color:var(--muted2)}
+  .op-st{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:10px;border:1px solid var(--line2);color:var(--muted);flex:none}
+  .op-st.live{color:var(--green);border-color:rgba(70,194,142,.4)}
+  .op-st.posting{color:var(--amber);border-color:rgba(242,179,61,.4)}
+  .op-tag{display:inline-block;font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:10px;margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}
+  .op-tag.def{background:rgba(70,194,142,.15);color:var(--green)}
+  .op-tag.off{background:rgba(229,87,92,.15);color:var(--red)}
+  .op-tag.idle{background:var(--line);color:var(--muted2)}
+  .op-mission{font-size:11.5px;line-height:1.35;color:var(--muted);min-height:32px}
+  .ops-ctrl{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .ops-ctrl select{background:var(--bg);border:1px solid var(--line2);border-radius:4px;color:var(--muted);font-family:var(--mono);font-size:10.5px;padding:6px 8px;outline:none}
+  .btn.sm{padding:7px 12px;font-size:11px}
+  .btn.def{border-color:var(--green);background:var(--green);color:#06140d}
+  .btn.off{border-color:var(--red);background:transparent;color:var(--red)}
+
   /* sentiment gauge / bars */
   .sbar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0}
   .sbar span{display:block;height:100%;transition:width .8s ease}
@@ -477,6 +502,29 @@
           <div class="stat-inline"><div class="si"><div class="v" style="color:var(--amber)">8.4%</div><div class="k">Engagement</div></div>
             <div class="si"><div class="v">312k</div><div class="k">Alcance</div></div>
             <div class="si"><div class="v" style="color:var(--green)">+22%</div><div class="k">vs sem. previa</div></div></div></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3><span>Red de respuesta en redes <span class="tag">órdenes en vivo</span></span>
+          <span class="ops-ctrl">
+            <select id="ops-topic">
+              <option value="propuesta de agua">Tema: agua</option>
+              <option value="tema de seguridad">Tema: seguridad</option>
+              <option value="ataque sobre obras públicas">Ataque: obras públicas</option>
+              <option value="rumor en redes">Rumor en redes</option>
+              <option value="propuesta de empleo">Tema: empleo</option>
+              <option value="contraste vs Adversario A">Contraste vs Adversario A</option>
+            </select>
+            <button class="btn sm def" onclick="dispatchOrder('def')">🛡 Defender</button>
+            <button class="btn sm off" onclick="dispatchOrder('off')">⚔ Contraatacar</button>
+          </span></h3>
+        <div class="stat-inline" id="ops-stats" style="margin-bottom:14px"></div>
+        <div class="grid g2">
+          <div><div class="ops" id="ops-grid"></div></div>
+          <div><h3 style="margin-bottom:8px">Órdenes y respuestas <span class="tag">en vivo</span></h3>
+            <div class="feed" id="ops-feed" style="max-height:300px"></div></div>
+        </div>
+        <div class="notice">⚖️ Coordinación de mensajería con operadores y voluntarios <b>reales e identificados</b>. Apegado a normativa electoral (INE): sin cuentas falsas, sin bots ni automatización engañosa. "Contraatacar" = contraste de mensaje y réplica con datos, no ataques personales.</div>
       </div>
     </section>
 
@@ -1506,6 +1554,66 @@ function renderDigital(){
   $('#digital-queue').innerHTML=q.map(t=>`<div class="brow"><div class="top"><span>${t[0]}</span><span>${t[1]}</span></div><div class="track"><i class="${t[2]}" style="width:${t[3]}%"></i></div></div>`).join('');
 }
 
+/* ===== red de respuesta en redes (operadores) ===== */
+const OPERATORS=[
+  {a:'R. Soto',h:'@rsoto_hmo',net:'X'},{a:'L. Bórquez',h:'@lau_bqz',net:'FB'},
+  {a:'Brigada Norte',h:'@brig_norte',net:'IG'},{a:'M. Valdez',h:'@mvaldez_son',net:'TikTok'},
+  {a:'J. Coronado',h:'@jcoronado',net:'X'},{a:'Eq. Obregón',h:'@eq_cjme',net:'FB'},
+  {a:'A. Robles',h:'@arobles_mx',net:'IG'},{a:'D. Figueroa',h:'@dfigueroa',net:'X'},
+  {a:'Voluntarios CETYS',h:'@vol_unison',net:'TikTok'},{a:'S. Ibarra',h:'@s_ibarra',net:'FB'},
+  {a:'Eq. Nogales',h:'@eq_ngs',net:'X'},{a:'P. Quintana',h:'@pquintana',net:'IG'}
+];
+OPERATORS.forEach(o=>{o.mode='idle';o.mission='En espera de orden';o.status='live';o.posts=ri(4,40);});
+const MISSION={
+  def:['Responder ataque sobre {t} con datos verificables','Desmentir rumor y compartir evidencia','Amplificar la postura oficial sobre {t}','Contener narrativa negativa en comentarios','Defender la propuesta de {t} con cifras'],
+  off:['Posicionar contraste vs adversario en {t}','Exponer la incongruencia del rival sobre {t}','Impulsar hashtag de contraste #SonoraAvanza','Señalar la falta de resultados del adversario','Comparar propuestas en {t} lado a lado']
+};
+const OPSTATE={posts:0,reach:0,replies:0};
+function opAv(a){return a.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function renderOps(){
+  const g=$('#ops-grid'); if(!g)return;
+  g.innerHTML=OPERATORS.map(o=>`<div class="op ${o.mode}">
+    <div class="op-h"><div class="op-av">${opAv(o.a)}</div>
+      <div class="op-id"><b>${o.a}</b><span>${o.h} · ${o.net}</span></div>
+      <span class="op-st ${o.status==='posting'?'posting':'live'}">${o.status==='posting'?'publicando':'en línea'}</span></div>
+    <span class="op-tag ${o.mode}">${o.mode==='def'?'🛡 Defensa':o.mode==='off'?'⚔ Contraataque':'· standby'}</span>
+    <div class="op-mission">${o.mission}</div></div>`).join('');
+  renderOpStats();
+}
+function renderOpStats(){
+  const act=OPERATORS.filter(o=>o.mode!=='idle').length;
+  $('#ops-stats').innerHTML=`
+    <div class="si"><div class="v" style="color:var(--green)">${act}/${OPERATORS.length}</div><div class="k">Operadores activos</div></div>
+    <div class="si"><div class="v">${fmtN(OPSTATE.posts)}</div><div class="k">Publicaciones hoy</div></div>
+    <div class="si"><div class="v" style="color:var(--cyan)">${fmtN(OPSTATE.reach/1000)}k</div><div class="k">Alcance</div></div>
+    <div class="si"><div class="v" style="color:var(--amber)">${fmtN(OPSTATE.replies)}</div><div class="k">Respuestas</div></div>`;
+}
+function opsFeed(html,cls){const f=$('#ops-feed');if(!f)return;
+  f.insertAdjacentHTML('afterbegin',html);while(f.children.length>16)f.lastChild.remove();}
+function dispatchOrder(mode){
+  const topic=$('#ops-topic').value;
+  const n=ri(4,7); const chosen=[...OPERATORS].sort(()=>Math.random()-.5).slice(0,n);
+  const lbl=mode==='def'?'DEFENDER':'CONTRAATAQUE';
+  const pip=mode==='def'?'pos':'neg';
+  opsFeed(`<div class="feeditem"><span class="pip ${pip}"></span><div class="bd"><div class="t"><b style="color:${mode==='def'?'var(--green)':'var(--red)'}">▣ ORDEN · ${lbl}</b> — ${topic}</div><div class="m">Sala de mando → ${n} operadores · hace 0 s</div></div></div>`);
+  chosen.forEach((o,i)=>{
+    o.mode=mode; o.status='posting';
+    o.mission=pick(MISSION[mode]).replace('{t}',topic);
+    setTimeout(()=>{
+      o.posts++; OPSTATE.posts++; OPSTATE.reach+=ri(800,4200); OPSTATE.replies+=ri(1,6);
+      opsFeed(`<div class="feeditem"><span class="pip ${pip}"></span><div class="bd"><div class="t">${o.a} <span style="color:var(--muted2)">(${o.net})</span>: ${o.mission}</div><div class="m">${o.h} · publicado · alcance ~${fmtN(ri(800,4200)/1000)}k</div></div></div>`);
+      o.status='live'; renderOps();
+    }, 500+i*450);
+  });
+  renderOps();
+}
+/* actividad orgánica de fondo */
+function opsTick(){
+  if(Math.random()<0.6){const o=pick(OPERATORS); if(o.mode!=='idle'){o.posts++;OPSTATE.posts++;OPSTATE.reach+=ri(400,2600);OPSTATE.replies+=ri(0,4);
+    o.status='posting'; setTimeout(()=>{o.status='live';renderOps();},900);}}
+  renderOpStats();
+}
+
 /* ===================== TIERRA ===================== */
 const TBRIG=[['Brigada 1 · Centro',88,'green'],['Brigada 3 · Pitic',72,'green'],['Brigada 5 · Villa de Seris',61,''],['Brigada 7 · Las Quintas',44,''],['Brigada 9 · Oriente',23,'amber']];
 let tHomes=2840;
@@ -1753,6 +1861,7 @@ function syncMapStats(){
 // render all
 buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
 renderIntel();renderDigital();renderTierra();renderGOTV();renderShield();renderDefensa();renderActaFlow();
+OPSTATE.posts=ri(180,420);OPSTATE.reach=ri(120000,320000);OPSTATE.replies=ri(60,180);renderOps();
 for(let i=0;i<8;i++)pushSignal();
 for(let i=0;i<7;i++)pushIntelFeed();
 tierraLive();
@@ -1766,6 +1875,7 @@ setInterval(pushIntelFeed,2600);
 setInterval(renderIntel,5000);
 setInterval(tierraLive,3200);
 setInterval(defensaStep,3000);
+setInterval(opsTick,3400);
 setInterval(syncMapStats,1000);
 
 $('#gen-topic').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
