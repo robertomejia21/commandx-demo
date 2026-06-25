@@ -57,6 +57,36 @@
   .health.warn{color:var(--amber);border-color:rgba(242,179,61,.4)} .health.warn .hdot{background:var(--amber);box-shadow:0 0 8px var(--amber)}
   .health.crit{color:var(--red);border-color:rgba(229,87,92,.45)} .health.crit .hdot{background:var(--red);box-shadow:0 0 8px var(--red)}
 
+  /* postura / nivel de alerta */
+  .posture{display:flex;align-items:center;gap:7px;padding:4px 11px;border-radius:20px;cursor:pointer;border:1px solid var(--line2);
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;font-weight:700;transition:.2s;user-select:none}
+  .posture .pdot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+  .posture.norm{color:var(--green);border-color:rgba(70,194,142,.4)} .posture.norm .pdot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .posture.elev{color:var(--amber);border-color:rgba(242,179,61,.45)} .posture.elev .pdot{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .posture.crit{color:#fff;background:var(--red);border-color:var(--red);animation:pulse 1.4s infinite} .posture.crit .pdot{background:#fff}
+  .nextev{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.05em} .nextev b{color:var(--cyan);font-family:var(--disp)}
+
+  /* banner ÚLTIMA HORA */
+  #breaking{position:fixed;top:0;left:0;right:0;z-index:150;display:none;align-items:center;gap:14px;
+    padding:11px 22px;background:linear-gradient(90deg,#c0282d,#e5575c);color:#fff;box-shadow:0 8px 30px rgba(229,87,92,.4);
+    transform:translateY(-100%);transition:transform .4s cubic-bezier(.2,.9,.3,1.2)}
+  #breaking.on{display:flex;transform:translateY(0)}
+  #breaking .bk{flex:none;background:#fff;color:#c0282d;font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.12em;padding:4px 11px;border-radius:4px}
+  #breaking .bx{flex:1;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.02em}
+  #breaking .bc{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:5px;padding:5px 11px;cursor:pointer;font-family:var(--mono);font-size:10px}
+  @media(max-width:560px){#breaking{padding:9px 13px;gap:9px}#breaking .bx{font-size:12px}}
+
+  /* comparador head-to-head */
+  .h2h{display:flex;flex-direction:column;gap:11px}
+  .h2h .h2r{display:grid;grid-template-columns:120px 1fr 54px;align-items:center;gap:12px}
+  .h2h .h2n{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.02em;display:flex;align-items:center;gap:7px}
+  .h2h .h2n .sw{width:9px;height:9px;border-radius:2px;flex:none}
+  .h2h .h2bar{height:14px;background:var(--surface);border-radius:7px;overflow:hidden}
+  .h2h .h2bar i{display:block;height:100%;border-radius:7px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .h2h .h2v{font-family:var(--mono);font-size:13px;text-align:right;font-weight:700}
+  .h2h .h2lead{margin-top:4px;font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:.04em}
+  @media(max-width:560px){.h2h .h2r{grid-template-columns:84px 1fr 44px;gap:8px}.h2h .h2n{font-size:11px}}
+
   /* ticker global en vivo */
   .ticker{grid-area:ticker;display:flex;align-items:center;gap:0;background:#05080f;border-top:1px solid var(--line2);overflow:hidden;font-family:var(--mono);font-size:11px}
   .ticker .tklab{flex:none;display:flex;align-items:center;gap:6px;height:100%;padding:0 13px;background:var(--red);color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px}
@@ -443,7 +473,7 @@
     .view{padding:18px 14px 50px}
   }
   @media(max-width:560px){
-    .top .clock,.top .aimode{display:none}
+    .top .clock,.top .aimode,.nextev{display:none}
     .vhead h1{font-size:25px}
     .vhead .meta{font-size:9.5px}
     .stat-inline{gap:14px}
@@ -469,7 +499,9 @@
   <div class="top">
     <div class="campaign">Campaña Estatal · Sonora<small>Hermosillo · Sonora, México</small></div>
     <div class="right">
+      <span class="posture norm" id="posture" onclick="cyclePosture()" title="Nivel de alerta de campaña — clic para cambiar"><span class="pdot"></span><span id="posture-t">NORMAL</span></span>
       <span class="health ok" id="health" title="Índice de salud de campaña"><span class="hdot"></span>SALUD <b id="health-n">—</b></span>
+      <span class="nextev" id="nextev" title="Próximo evento de agenda">PRÓX <b id="nextev-t">—</b></span>
       <span class="countdown" id="countdown">D-00</span>
       <span class="clock" id="clock">--:--:--</span>
       <button class="pbtn" id="wall-btn" onclick="openWall()">▦ Muro</button>
@@ -572,6 +604,20 @@
             <div class="mmetric"><div class="v" style="color:var(--cyan)" id="op-tasks">—</div><div class="k">Tareas / hora</div></div>
           </div>
           <div class="blist" id="op-modules" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card span2">
+          <h3>Comparador en vivo vs oponentes <span class="tag" id="h2h-upd">en vivo</span></h3>
+          <div class="h2h" id="h2h-bars"></div>
+          <div class="h2lead" id="h2h-lead">—</div>
+          <div class="notice" style="margin-top:12px">Intención + <b>momentum</b> (tendencia 7 días) y <b>presencia digital</b> (share of voice) consolidados por IA desde encuestas, redes y campo.</div>
+        </div>
+        <div class="card">
+          <h3>Momentum semanal <span class="tag" style="color:var(--green)">7 días</span></h3>
+          <div id="h2h-mom"></div>
+          <div class="notice" style="margin-top:10px">Quién gana o pierde terreno cada día. La IA recalibra con cada nueva señal.</div>
         </div>
       </div>
     </section>
@@ -870,6 +916,13 @@
   </div>
 </div>
 
+<!-- banner ÚLTIMA HORA -->
+<div id="breaking">
+  <span class="bk">⚡ ÚLTIMA HORA</span>
+  <span class="bx" id="breaking-x">—</span>
+  <button class="bc" onclick="hideBreaking()">Descartar ✕</button>
+</div>
+
 <!-- toasts de incidentes -->
 <div id="toasts"></div>
 
@@ -878,6 +931,7 @@
   <div class="wall-top">
     <div class="wl"><span class="dot"></span>COMMANDX · MURO SITUACIONAL</div>
     <div class="wsub" id="wall-sub">Sonora · Hermosillo</div>
+    <div class="wsub" style="color:var(--cyan)">▶ PRÓX: <span id="wall-next">—</span></div>
     <div class="wclock" id="wall-clock">--:--:--</div>
     <button class="wx" onclick="closeWall()">✕ Salir del muro</button>
   </div>
@@ -2586,7 +2640,7 @@ const INCIDENTS=[
   {kind:'info',ic:'🏠',title:'Tierra · cobertura',text:'Brigada 03 superó 90% de su ruta en Centro. Fotos verificadas con GPS.',meta:'anti-fraude'},
   {kind:'info',ic:'💬',title:'Digital · viralidad',text:'Reel de propuesta de seguridad superó 120k reproducciones.',meta:'war room'},
 ];
-function pushIncident(){toast(pick(INCIDENTS));}
+function pushIncident(){const it=pick(INCIDENTS);toast(it);if(it.kind==='crit')showBreaking(it.title.replace(/^[^·]+· /,'')+' — '+it.text);}
 
 /* ---- Muro de video (video wall) ---- */
 let _wallTimer=null;
@@ -2608,7 +2662,7 @@ function renderWall(){
   const tc=CANVASES['tierra-canvas']; const cov=tc&&tc.data.coverage!=null?Math.round(tc.data.coverage):'—';
   const kp=[
     {l:'Intención de voto',v:STATE.intent.toFixed(1)+'%',d:'▲ liderando'},
-    {l:'Sentimiento neto',v:'+'+Math.round(STATE.sent),d:'▲ favorable'},
+    {l:'Ventaja vs 2º',v:'+'+(STATE.intent-31).toFixed(1)+' pts',d:'head-to-head'},
     {l:'Votantes ID',v:fmtN(STATE.voters),d:'▲ base movilizable'},
     {l:'Salud campaña',v:campaignHealth(),d:'índice global'},
     {l:'Riesgo (Shield)',v:(SHIELD?Math.round(SHIELD.risk):41)+'/100',d:'monitoreo 24/7'},
@@ -2621,6 +2675,89 @@ makeCanvas('wall-canvas',(o,t)=>{ if(!$('#wall').classList.contains('on'))return
 // cerrar muro con Escape
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#wall').classList.contains('on'))closeWall();});
 
+/* ---- Comparador en vivo vs oponentes (head-to-head) ---- */
+const H2H=[
+  {n:'Nuestra campaña',c:'var(--green)',base:45.2,sov:48,mom:[0,.3,.5,.4,.7,.6,.9]},
+  {n:'Adversario A',c:'var(--red)',base:31.0,sov:29,mom:[0,-.1,.1,-.2,-.1,-.3,-.2]},
+  {n:'Adversario B',c:'var(--violet)',base:16.4,sov:15,mom:[0,.1,0,-.1,0,-.2,-.1]},
+  {n:'Indecisos',c:'var(--muted)',base:7.4,sov:8,mom:[0,-.2,-.3,-.1,-.4,-.2,-.5]},
+];
+function renderH2H(){
+  const el=$('#h2h-bars'); if(!el)return;
+  // pequeñas variaciones en vivo, manteniendo a nuestra campaña al frente
+  const vals=H2H.map((x,i)=>clamp(x.base+rnd(-0.5,0.5),0,60));
+  const max=Math.max(...vals);
+  el.innerHTML=H2H.map((x,i)=>{
+    const v=vals[i], mo=x.mom[x.mom.length-1]-x.mom[0];
+    const arr=mo>0.15?'<span style="color:var(--green)">▲</span>':mo<-0.15?'<span style="color:var(--red)">▼</span>':'<span style="color:var(--muted2)">▬</span>';
+    return `<div class="h2r"><div class="h2n"><span class="sw" style="background:${x.c}"></span>${x.n}</div>
+      <div class="h2bar"><i style="width:${(v/max*100).toFixed(0)}%;background:${x.c}"></i></div>
+      <div class="h2v">${v.toFixed(1)}% ${arr}</div></div>`;
+  }).join('');
+  const lead=(vals[0]-vals[1]).toFixed(1);
+  $('#h2h-lead').innerHTML=`Ventaja sobre 2º lugar: <b style="color:var(--green)">+${lead} pts</b> · Share of Voice digital: <b style="color:var(--cyan)">${H2H[0].sov}%</b> (líder)`;
+  $('#h2h-upd').textContent='actualizado '+new Date().toLocaleTimeString('es-MX',{hour12:false});
+  // momentum semanal (mini barras por día)
+  const mm=$('#h2h-mom'); if(mm){
+    const days=['L','M','M','J','V','S','D'];
+    mm.innerHTML=H2H.slice(0,3).map(x=>{
+      const spark=x.mom.map((m,j)=>{const h=clamp(8+m*22+10,3,26);const pos=m>=0;return `<i title="${days[j]}" style="display:inline-block;width:9px;height:${h.toFixed(0)}px;background:${pos?x.c:'rgba(229,87,92,.5)'};border-radius:2px;vertical-align:bottom;margin-right:3px"></i>`;}).join('');
+      const net=x.mom[x.mom.length-1]-x.mom[0];
+      return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:5px"><span>${x.n}</span><span style="color:${net>0?'var(--green)':net<0?'var(--red)':'var(--muted)'}">${net>0?'+':''}${(net*10).toFixed(1)} pts/sem</span></div><div>${spark}</div></div>`;
+    }).join('');
+  }
+}
+
+/* ---- Nivel de alerta / postura de campaña ---- */
+const POSTURES=[{k:'norm',t:'NORMAL'},{k:'elev',t:'ELEVADO'},{k:'crit',t:'CRÍTICO'}];
+let _posIdx=0,_posManual=false;
+function applyPosture(){
+  const p=POSTURES[_posIdx],el=$('#posture');
+  el.classList.remove('norm','elev','crit'); el.classList.add(p.k);
+  $('#posture-t').textContent=p.t;
+  const lab=$('.ticker .tklab'); if(lab){lab.style.background=p.k==='crit'?'var(--red)':p.k==='elev'?'var(--amber)':'var(--red)';}
+  if(p.k==='crit')showBreaking('Postura CRÍTICA activada — sala de crisis en operación. Todos los equipos en máxima alerta.');
+}
+function cyclePosture(){_posManual=true;_posIdx=(_posIdx+1)%3;applyPosture();
+  toast({kind:_posIdx===2?'crit':_posIdx===1?'info':'ok',ic:'🚨',title:'Postura de campaña',text:'Nivel de alerta cambiado a '+POSTURES[_posIdx].t+' (manual).',meta:'coordinación de sala'});}
+function autoPosture(){ // escala sola con el riesgo de Shield si no es manual
+  if(_posManual)return;
+  const r=SHIELD?SHIELD.risk:30;
+  const idx=r>=70?2:r>=45?1:0;
+  if(idx!==_posIdx){_posIdx=idx;applyPosture();}
+}
+
+/* ---- Banner ÚLTIMA HORA ---- */
+let _bkTimer=null;
+function showBreaking(txt){
+  const b=$('#breaking'); if(!b)return;
+  $('#breaking-x').textContent=txt;
+  b.classList.add('on');
+  clearInterval(_bkTimer); _bkTimer=setTimeout(hideBreaking,9000);
+}
+function hideBreaking(){const b=$('#breaking');if(b)b.classList.remove('on');clearInterval(_bkTimer);}
+
+/* ---- Próximo evento / agenda del día ---- */
+const AGENDA=[
+  {t:'Mitin · Cd. Obregón',mins:74},{t:'Entrevista radio · Hermosillo',mins:142},
+  {t:'Recorrido · Nogales',mins:268},{t:'Cierre · Plaza Zaragoza',mins:402},
+];
+let _agIdx=0;
+function renderNextEvent(){
+  const a=AGENDA[_agIdx];
+  const h=Math.floor(a.mins/60),m=a.mins%60;
+  const t=$('#nextev-t'); if(t)t.textContent=(h>0?h+'h ':'')+m+'m · '+a.t.split(' · ')[0];
+  const wn=$('#wall-next'); if(wn)wn.textContent=a.t+' — en '+(h>0?h+'h ':'')+m+'m';
+}
+function agendaTick(){ // descuenta el reloj de agenda
+  AGENDA[_agIdx].mins-=1;
+  if(AGENDA[_agIdx].mins<=0){
+    showBreaking('Inicia ahora: '+AGENDA[_agIdx].t+'. Cobertura en vivo activada.');
+    _agIdx=(_agIdx+1)%AGENDA.length;
+  }
+  renderNextEvent();
+}
+
 // render all
 buildExtras();buildExtras2();buildAgentGrid();buildRosters();renderAgents();renderTopics();renderAlerts();updateKPIs();
 renderInfluencers();renderVoiceKPIs();renderDiaD(false);renderFactCheck();renderDefHr();
@@ -2632,12 +2769,15 @@ renderVoters();renderProjection();renderOpStatus();
 for(let i=0;i<8;i++)pushSignal();
 for(let i=0;i<7;i++)pushIntelFeed();
 tierraLive();
-renderHealth();renderTicker();
+renderHealth();renderTicker();renderH2H();applyPosture();renderNextEvent();
 setTimeout(pushIncident,3500);
 
 // intervals
 setInterval(renderHealth,2800);
 setInterval(pushIncident,9000);
+setInterval(renderH2H,6000);
+setInterval(autoPosture,3000);
+setInterval(agendaTick,1000);
 setInterval(()=>{ // alimentar el ticker con eventos vivos
   const ev=[
     {c:'up',t:'GOTV',x:fmtN(ri(40,180))+' recordatorios entregados por WhatsApp'},
